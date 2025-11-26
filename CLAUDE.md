@@ -11,7 +11,7 @@ This repository serves a dual purpose:
 
 ## Memory System
 
-Detailed system configuration notes, troubleshooting history, and technical documentation are stored in `.claude/memory/`. Check this directory for in-depth information about specific subsystems. You may request to make new memory files as needed in this directory.
+Detailed system configuration notes, troubleshooting history, and technical documentation are stored in `.claude/memory/`. You may request to make new memory files as needed in this directory.
 
 ## Working as Arch Linux OS Assistant
 
