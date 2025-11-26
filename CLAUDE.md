@@ -34,7 +34,13 @@ The `config` alias (defined in `.bashrc`) replaces `git` for dotfiles management
 alias config='/usr/bin/git --git-dir=$HOME/.dotfiles/ --work-tree=$HOME'
 ```
 
-**CRITICAL**: Always use `config` instead of `git` when managing dotfiles. Using `git` directly in `~/` will not work correctly.
+**For interactive user sessions**: Use `config` instead of `git` when managing dotfiles. Using `git` directly in `~/` will not work correctly.
+
+**For Claude Code**: Since bash sessions are non-interactive, the alias isn't available. Use the full command instead:
+
+```bash
+/usr/bin/git --git-dir=$HOME/.dotfiles/ --work-tree=$HOME <command>
+```
 
 ### Common Dotfiles Commands
 
