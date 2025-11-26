@@ -1,0 +1,267 @@
+/* Waybar Glassmorphic macOS-Style Theme */
+/* Using only GTK3-supported CSS properties */
+
+* {
+    border: none;
+    font-family: "JetBrainsMono Nerd Font", "SF Pro Display", Roboto, sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    min-height: 0;
+}
+
+window#waybar {
+    background-color: rgba(30, 30, 46, 0.85);
+    color: #cdd6f4;
+    transition-property: background-color;
+    transition-duration: 0.3s;
+    transition-timing-function: ease;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+window#waybar.hidden {
+    opacity: 0.2;
+}
+
+/* Power Button */
+#custom-power {
+    padding: 0 15px;
+    margin: 4px 0 4px 8px;
+    background-image: linear-gradient(135deg, rgba(243, 139, 168, 0.35), rgba(235, 160, 172, 0.35));
+    color: #f38ba8;
+    font-size: 18px;
+    border-radius: 12px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    transition-property: background-image, box-shadow;
+    transition-duration: 0.3s;
+    transition-timing-function: ease;
+}
+
+#custom-power:hover {
+    background-image: linear-gradient(135deg, rgba(243, 139, 168, 0.55), rgba(235, 160, 172, 0.55));
+    box-shadow: 0 4px 15px rgba(243, 139, 168, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+}
+
+/* Workspaces */
+#workspaces {
+    background-color: rgba(49, 50, 68, 0.5);
+    margin: 4px 8px;
+    padding: 0 4px;
+    border-radius: 12px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+#workspaces button {
+    padding: 0 12px;
+    margin: 4px 2px;
+    background-color: transparent;
+    color: #bac2de;
+    border-radius: 8px;
+    transition-property: background-color, box-shadow, color;
+    transition-duration: 0.3s;
+    transition-timing-function: ease;
+}
+
+#workspaces button:hover {
+    background-color: rgba(137, 180, 250, 0.2);
+    box-shadow: 0 0 10px rgba(137, 180, 250, 0.4);
+}
+
+#workspaces button.active {
+    background-image: linear-gradient(135deg, rgba(137, 180, 250, 0.4), rgba(116, 199, 236, 0.4));
+    color: #89b4fa;
+    box-shadow: 0 0 15px rgba(137, 180, 250, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+#workspaces button.urgent {
+    background-image: linear-gradient(135deg, rgba(243, 139, 168, 0.5), rgba(235, 160, 172, 0.5));
+    color: #f38ba8;
+    animation-name: urgent-pulse;
+    animation-duration: 1.5s;
+    animation-timing-function: ease-in-out;
+    animation-iteration-count: infinite;
+    animation-direction: alternate;
+}
+
+@keyframes urgent-pulse {
+    from {
+        box-shadow: 0 0 10px rgba(243, 139, 168, 0.4);
+        opacity: 1;
+    }
+    to {
+        box-shadow: 0 0 25px rgba(243, 139, 168, 0.8);
+        opacity: 0.85;
+    }
+}
+
+/* Window Title */
+#window {
+    padding: 0 15px;
+    margin: 4px 8px;
+    background-color: rgba(49, 50, 68, 0.5);
+    color: #cdd6f4;
+    font-weight: 600;
+    border-radius: 12px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+/* Right Side Modules - Base Styling */
+#pulseaudio,
+#bluetooth,
+#battery,
+#clock,
+#tray {
+    padding: 0 14px;
+    margin: 4px 4px;
+    border-radius: 12px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    transition-property: box-shadow;
+    transition-duration: 0.3s;
+    transition-timing-function: ease;
+}
+
+#pulseaudio:hover,
+#bluetooth:hover,
+#battery:hover,
+#clock:hover {
+    box-shadow: 0 4px 15px rgba(137, 180, 250, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+}
+
+/* Clock */
+#clock {
+    background-image: linear-gradient(135deg, rgba(137, 180, 250, 0.35), rgba(116, 199, 236, 0.35));
+    color: #89b4fa;
+    font-weight: 600;
+    margin-right: 8px;
+}
+
+/* Battery */
+#battery {
+    background-image: linear-gradient(135deg, rgba(166, 227, 161, 0.35), rgba(148, 226, 213, 0.35));
+    color: #a6e3a1;
+}
+
+#battery.charging {
+    background-image: linear-gradient(135deg, rgba(166, 227, 161, 0.45), rgba(148, 226, 213, 0.45));
+    animation-name: charging-glow;
+    animation-duration: 2s;
+    animation-timing-function: ease-in-out;
+    animation-iteration-count: infinite;
+    animation-direction: alternate;
+}
+
+@keyframes charging-glow {
+    from {
+        box-shadow: 0 2px 8px rgba(166, 227, 161, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    }
+    to {
+        box-shadow: 0 4px 20px rgba(166, 227, 161, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    }
+}
+
+#battery.warning:not(.charging) {
+    background-image: linear-gradient(135deg, rgba(249, 226, 175, 0.45), rgba(250, 179, 135, 0.45));
+    color: #f9e2af;
+}
+
+#battery.critical:not(.charging) {
+    background-image: linear-gradient(135deg, rgba(243, 139, 168, 0.5), rgba(235, 160, 172, 0.5));
+    color: #f38ba8;
+    animation-name: critical-alert;
+    animation-duration: 0.8s;
+    animation-timing-function: ease-in-out;
+    animation-iteration-count: infinite;
+    animation-direction: alternate;
+}
+
+@keyframes critical-alert {
+    from {
+        box-shadow: 0 2px 10px rgba(243, 139, 168, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        opacity: 1;
+    }
+    to {
+        box-shadow: 0 4px 25px rgba(243, 139, 168, 0.9), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+        opacity: 0.9;
+    }
+}
+
+/* Audio */
+#pulseaudio {
+    background-image: linear-gradient(135deg, rgba(250, 179, 135, 0.35), rgba(249, 226, 175, 0.35));
+    color: #fab387;
+}
+
+#pulseaudio.muted {
+    background-image: linear-gradient(135deg, rgba(127, 132, 156, 0.35), rgba(108, 112, 134, 0.35));
+    color: #7f849c;
+}
+
+/* Bluetooth */
+#bluetooth {
+    background-image: linear-gradient(135deg, rgba(180, 190, 254, 0.35), rgba(203, 166, 247, 0.35));
+    color: #b4befe;
+}
+
+#bluetooth.disconnected {
+    background-image: linear-gradient(135deg, rgba(127, 132, 156, 0.35), rgba(108, 112, 134, 0.35));
+    color: #7f849c;
+}
+
+#bluetooth.connected {
+    animation-name: connected-pulse;
+    animation-duration: 3s;
+    animation-timing-function: ease-in-out;
+    animation-iteration-count: infinite;
+    animation-direction: alternate;
+}
+
+@keyframes connected-pulse {
+    from {
+        box-shadow: 0 2px 6px rgba(180, 190, 254, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    }
+    to {
+        box-shadow: 0 4px 18px rgba(180, 190, 254, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+    }
+}
+
+/* System Tray */
+#tray {
+    background-color: rgba(49, 50, 68, 0.4);
+    padding: 0 10px;
+}
+
+#tray > .passive {
+    -gtk-icon-effect: dim;
+}
+
+#tray > .needs-attention {
+    -gtk-icon-effect: highlight;
+    background-color: rgba(243, 139, 168, 0.5);
+    border-radius: 8px;
+    animation-name: attention-blink;
+    animation-duration: 1.2s;
+    animation-timing-function: ease-in-out;
+    animation-iteration-count: infinite;
+    animation-direction: alternate;
+}
+
+@keyframes attention-blink {
+    from {
+        opacity: 1;
+    }
+    to {
+        opacity: 0.7;
+    }
+}
+
+/* Tooltip Styling */
+tooltip {
+    background-color: rgba(30, 30, 46, 0.95);
+    border: 1px solid rgba(137, 180, 250, 0.3);
+    border-radius: 8px;
+    color: #cdd6f4;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+}
+
+tooltip label {
+    color: #cdd6f4;
+}
