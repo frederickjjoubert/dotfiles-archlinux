@@ -14,7 +14,7 @@ This repository serves a dual purpose:
 - **Git repository**: `~/.dotfiles/` (bare repository, hidden)
 - **Work tree**: `~/` (entire home directory)
 - **Remote**: `git@github.com:frederickjjoubert/dotfiles-archlinux.git`
-- **Branch**: `customization`
+- **Branch**: `main`
 
 ### Key Directories
 
