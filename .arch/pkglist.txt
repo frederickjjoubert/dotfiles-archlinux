@@ -1,6 +1,7 @@
 amd-ucode
 base
 base-devel
+blueman
 bluez
 bluez-utils
 dolphin
@@ -22,6 +23,7 @@ linux-lts
 nano
 network-manager-applet
 networkmanager
+pavucontrol
 pipewire
 pipewire-alsa
 pipewire-jack
@@ -35,9 +37,11 @@ sddm
 slurp
 smartmontools
 sof-firmware
+ttf-jetbrains-mono-nerd
 uwsm
 vim
 vulkan-radeon
+waybar
 wget
 wireless_tools
 wireplumber
