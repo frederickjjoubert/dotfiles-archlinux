@@ -1,3 +1,4 @@
 cursor-bin
+gitkraken
 paru
 wlogout

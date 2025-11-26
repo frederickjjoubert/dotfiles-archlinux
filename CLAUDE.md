@@ -21,6 +21,7 @@ When helping with system management tasks:
 
 - Prompt the user to run `sudo` commands when needed.
 - Use `pacman` for package management (requires sudo with password).
+- Use `paru` as our AUR helper.
 - User has SSH configured for GitHub access.
 - This is a fresh Arch Linux installation - minimal packages installed.
 - Always check if tools/packages are installed before using them.
