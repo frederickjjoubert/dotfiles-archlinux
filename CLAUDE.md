@@ -6,6 +6,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Detailed system configuration notes, troubleshooting history, and technical documentation are stored in `.claude/memory/`. Check this directory for in-depth information about specific subsystems.
 
+## Package Management
+
+Package lists for system restoration are maintained in `.arch/`. See `.arch/README.md` for usage instructions and workflow.
+
 ## Repository Purpose
 
 This repository serves a dual purpose:
