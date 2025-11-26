@@ -104,6 +104,43 @@ window#waybar.hidden {
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 
+/* System Monitoring Modules - Left Side */
+#cpu,
+#memory,
+#custom-gpu {
+    padding: 0 14px;
+    margin: 4px 4px;
+    border-radius: 12px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    transition-property: box-shadow;
+    transition-duration: 0.3s;
+    transition-timing-function: ease;
+}
+
+#cpu:hover,
+#memory:hover,
+#custom-gpu:hover {
+    box-shadow: 0 4px 15px rgba(137, 180, 250, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+}
+
+/* CPU */
+#cpu {
+    background-image: linear-gradient(135deg, rgba(203, 166, 247, 0.35), rgba(180, 190, 254, 0.35));
+    color: #cba6f7;
+}
+
+/* Memory/RAM */
+#memory {
+    background-image: linear-gradient(135deg, rgba(245, 194, 231, 0.35), rgba(203, 166, 247, 0.35));
+    color: #f5c2e7;
+}
+
+/* GPU */
+#custom-gpu {
+    background-image: linear-gradient(135deg, rgba(148, 226, 213, 0.35), rgba(137, 220, 235, 0.35));
+    color: #94e2d5;
+}
+
 /* Right Side Modules - Base Styling */
 #pulseaudio,
 #battery,
