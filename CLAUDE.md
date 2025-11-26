@@ -88,3 +88,4 @@ When helping with system management tasks:
 - User has SSH configured for GitHub access
 - This is a fresh Arch Linux installation - minimal packages installed
 - Always check if tools/packages are installed before using them
+- Prompt the user to run `sudo` commands when needed.
