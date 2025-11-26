@@ -106,7 +106,6 @@ window#waybar.hidden {
 
 /* Right Side Modules - Base Styling */
 #pulseaudio,
-#bluetooth,
 #battery,
 #clock,
 #tray {
@@ -120,7 +119,6 @@ window#waybar.hidden {
 }
 
 #pulseaudio:hover,
-#bluetooth:hover,
 #battery:hover,
 #clock:hover {
     box-shadow: 0 4px 15px rgba(137, 180, 250, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.15);
@@ -193,34 +191,6 @@ window#waybar.hidden {
 #pulseaudio.muted {
     background-image: linear-gradient(135deg, rgba(127, 132, 156, 0.35), rgba(108, 112, 134, 0.35));
     color: #7f849c;
-}
-
-/* Bluetooth */
-#bluetooth {
-    background-image: linear-gradient(135deg, rgba(180, 190, 254, 0.35), rgba(203, 166, 247, 0.35));
-    color: #b4befe;
-}
-
-#bluetooth.disconnected {
-    background-image: linear-gradient(135deg, rgba(127, 132, 156, 0.35), rgba(108, 112, 134, 0.35));
-    color: #7f849c;
-}
-
-#bluetooth.connected {
-    animation-name: connected-pulse;
-    animation-duration: 3s;
-    animation-timing-function: ease-in-out;
-    animation-iteration-count: infinite;
-    animation-direction: alternate;
-}
-
-@keyframes connected-pulse {
-    from {
-        box-shadow: 0 2px 6px rgba(180, 190, 254, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1);
-    }
-    to {
-        box-shadow: 0 4px 18px rgba(180, 190, 254, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.15);
-    }
 }
 
 /* System Tray */
