@@ -1,112 +1,254 @@
-# Archinstall Profiles
+# Archinstall Configuration
 
-This directory contains archinstall configuration profiles for reproducible Arch Linux installations.
+This directory contains archinstall configuration files for reproducible Arch Linux installations.
 
-## Available Profiles
+## Configuration Files
 
-### `thinkpad-e16.json`
-Base configuration for ThinkPad E16 Gen 2 without encryption.
-
-**Key Features:**
-- 3-partition layout: 1GB /boot (FAT32), 100GB / (ext4), remaining /home (ext4)
-- systemd-boot bootloader
-- Hyprland window manager (Wayland compositor)
-- Essential Hyprland ecosystem: kitty, wofi, dunst, hyprpaper, grim, slurp
-- NetworkManager for networking
-- US locale and Pacific timezone
-- Base development tools included
-
-### `thinkpad-e16-encrypted.json`
-Same as above but with LUKS encryption on the root partition.
+### `user_configuration.json`
+Complete system configuration including:
 
 **Key Features:**
-- All features from base profile
-- LUKS encryption on root partition (partition_2)
-- Encryption password will be prompted during installation
-- /boot remains unencrypted (required for systemd-boot)
+- **Disk Layout**: 3-partition layout on `/dev/nvme0n1`:
+  - 1GB `/boot` (FAT32, ESP)
+  - 50GB `/` (ext4, LUKS encrypted)
+  - ~880GB `/home` (ext4, LUKS encrypted)
+- **Boot**: systemd-boot bootloader
+- **Desktop**: Hyprland (Wayland compositor) with SDDM greeter
+- **Graphics**: AMD/ATI open-source drivers
+- **Audio**: PipeWire
+- **Bluetooth**: Enabled
+- **Network**: NetworkManager
+- **Kernels**: linux and linux-lts
+- **Locale**: US keyboard, en_US.UTF-8, Pacific timezone
+- **Encryption**: LUKS encryption on both root and home partitions
+
+### `user_credentials.json`
+User accounts and passwords (template with empty passwords).
+
+**Fields:**
+- `encryption_password`: LUKS disk encryption password (for root and home partitions)
+- `root_enc_password`: Root user account password
+- `users[].enc_password`: User account password(s)
+- `users[].username`: Username (currently: `jacques`)
+- `users[].sudo`: Sudo access (currently: `true`)
+- `users[].groups`: Additional groups (currently: empty)
+
+**How to populate passwords:**
+
+The `enc_password` fields use **plain text passwords**, not hashes. Despite the "enc" prefix, you provide passwords as normal strings and archinstall handles the hashing automatically during installation.
+
+**Option 1 - Interactive (Recommended):**
+- Leave all password fields as empty strings: `""`
+- Archinstall will prompt you to enter passwords during installation
+- Most secure - no passwords stored in files
+
+**Option 2 - Automated:**
+- Fill password fields with plain text: `"encryption_password": "MySecurePass123"`
+- Archinstall will hash these automatically
+- Convenient for automated installations
+- **Security risk**: Never commit this file with real passwords to git!
 
 ## Usage
 
-### Method 1: Using archinstall on Installation Media
+### Method 1: Automated Installation with Credentials
 
-1. Boot from Arch Linux installation media
-2. Copy your desired profile to the installation environment:
+**Best for**: Fully automated installation with minimal prompts
+
+1. **Prepare credentials file** (on a secure system before installation):
    ```bash
-   # If profile is on USB drive
+   # Edit user_credentials.json and add your passwords as plain text
+   # archinstall will handle hashing automatically
+   {
+     "encryption_password": "your-strong-luks-password",
+     "root_enc_password": "your-root-password",
+     "users": [
+       {
+         "enc_password": "your-user-password",
+         "username": "jacques",
+         "sudo": true,
+         "groups": []
+       }
+     ]
+   }
+   ```
+
+   **⚠️ Security Warning**: Never commit files with actual passwords to git!
+
+2. **Boot from Arch Linux installation media**
+
+3. **Copy configuration files**:
+   ```bash
+   # If files are on USB drive
    mount /dev/sdX1 /mnt
-   cp /mnt/.arch/archinstall/thinkpad-e16.json /root/
+   cp /mnt/.arch/archinstall/user_configuration.json /root/
+   cp /mnt/.arch/archinstall/user_credentials.json /root/
 
-   # Or download from GitHub
-   curl -O https://raw.githubusercontent.com/frederickjjoubert/dotfiles-archlinux/main/.arch/archinstall/thinkpad-e16.json
+   # Or download from GitHub (then edit credentials locally)
+   curl -O https://raw.githubusercontent.com/frederickjjoubert/dotfiles-archlinux/main/.arch/archinstall/user_configuration.json
+   curl -O https://raw.githubusercontent.com/frederickjjoubert/dotfiles-archlinux/main/.arch/archinstall/user_credentials.json
+
+   # Edit credentials file with your passwords
+   nano /root/user_credentials.json
    ```
 
-3. Run archinstall with the profile:
+4. **Run archinstall**:
    ```bash
-   archinstall --config /root/thinkpad-e16.json
+   archinstall --config /root/user_configuration.json --creds /root/user_credentials.json
    ```
 
-4. Follow any interactive prompts (user creation, passwords, etc.)
+5. **Installation proceeds automatically** with your provided credentials
 
-### Method 2: Interactive Installation with Profile Reference
+### Method 2: Interactive Password Entry (Recommended for Security)
+
+**Best for**: Secure installation without storing passwords in files
+
+1. **Boot from Arch Linux installation media**
+
+2. **Copy only the configuration file**:
+   ```bash
+   # Leave user_credentials.json with empty passwords
+   curl -O https://raw.githubusercontent.com/frederickjjoubert/dotfiles-archlinux/main/.arch/archinstall/user_configuration.json
+   ```
+
+3. **Run archinstall**:
+   ```bash
+   archinstall --config /root/user_configuration.json
+   ```
+
+4. **Enter passwords interactively** when prompted:
+   - LUKS encryption password (for disk encryption)
+   - Root password
+   - User password
+
+### Method 3: Manual Configuration
 
 1. Boot from Arch Linux installation media
-2. Run archinstall normally:
+2. Run archinstall interactively:
    ```bash
    archinstall
    ```
-
-3. When asked if you want to load a configuration, select "Yes"
-4. Point to your profile JSON file
-5. Review and modify settings as needed
-6. Proceed with installation
+3. Load `user_configuration.json` when prompted
+4. Review/modify settings as needed
+5. Enter passwords when prompted
 
 ## Customization
 
-### User Configuration
-The profiles don't include user configuration. During installation you'll be prompted to:
-- Create your username
-- Set user password
-- Set root password (optional)
-- Configure sudo access
+### Modifying User Credentials
 
-### Packages
-The `packages` array in the JSON contains essential packages. You may want to add:
-- Development tools: `python`, `nodejs`, `docker`, `rust`
-- Utilities: `tmux`, `fzf`, `ripgrep`, `bat`
-- Applications specific to your workflow
+Edit `user_credentials.json` to:
 
-### Disk Layout
-The current profiles assume a ~1TB NVMe drive. Adjust partition sizes in `disk_config.device_modifications[0].partitions` if needed:
+**Add/modify users**:
+```json
+"users": [
+  {
+    "username": "jacques",
+    "enc_password": "",
+    "sudo": true,
+    "groups": ["docker", "wheel"]
+  },
+  {
+    "username": "additional_user",
+    "enc_password": "",
+    "sudo": false,
+    "groups": []
+  }
+]
+```
+
+**Password handling**:
+- Leave `enc_password` fields empty (`""`) to be prompted during installation
+- Or fill with plain text passwords (archinstall hashes them automatically)
+- Never commit files with actual passwords to version control!
+
+### Adding Packages
+
+Edit `user_configuration.json` to add packages:
 
 ```json
-"length": {
-  "unit": "GiB",      // or "percentage" for remaining space
-  "value": 100        // size in GiB or percentage
+"packages": [
+  "git",
+  "vim",
+  "python",
+  "nodejs",
+  "docker",
+  "rust",
+  "tmux",
+  "fzf",
+  "ripgrep",
+  "bat"
+]
+```
+
+The current configuration has an empty packages array - Hyprland and its dependencies are installed via the profile, but you'll want to add your essential tools here.
+
+### Adjusting Disk Layout
+
+Modify `disk_config.device_modifications[0].partitions` in `user_configuration.json`:
+
+**Change partition sizes**:
+```json
+"size": {
+  "unit": "GiB",    // or "B" for bytes
+  "value": 100      // size value
 }
 ```
 
-### Encryption Options
-For the encrypted profile, you can modify:
-- Encryption type (currently LUKS)
-- Which partitions to encrypt (currently only root)
-- Consider enabling TPM2 auto-unlock if available
+**Change device** (if not using `/dev/nvme0n1`):
+```json
+"device": "/dev/sda"  // or your actual device
+```
+
+**Current layout**:
+- Boot: 1 GiB
+- Root: 50 GiB
+- Home: ~880 GiB (remaining space)
+
+### Encryption Configuration
+
+The current configuration uses LUKS encryption on both root and home partitions.
+
+**To disable encryption**:
+Remove or empty the `disk_encryption` section:
+```json
+"disk_encryption": null
+```
+
+**To encrypt only root** (not home):
+Modify the `partitions` array in `disk_encryption`:
+```json
+"disk_encryption": {
+  "encryption_type": "luks",
+  "partitions": [
+    "b3a21f73-860c-4203-b557-a805d6c991b2"  // root only
+  ]
+}
+```
+
+**Advanced**: Consider TPM2 auto-unlock (requires post-install configuration)
 
 ## Important Notes
 
 ### Pre-Installation Checklist
-- [ ] Backup all important data
-- [ ] Verify boot mode (should be UEFI)
-- [ ] Check network connectivity
-- [ ] Verify disk device name (`lsblk` - currently assumes `/dev/nvme0n1`)
-- [ ] Update profile if disk device differs
+
+- [ ] **Backup all important data** - installation will wipe the target disk
+- [ ] Verify boot mode is UEFI: `ls /sys/firmware/efi/efivars`
+- [ ] Check network connectivity: `ping archlinux.org`
+- [ ] Verify disk device name with `lsblk` (currently assumes `/dev/nvme0n1`)
+- [ ] Update `user_configuration.json` if disk device differs
+- [ ] Decide on password strategy (interactive vs. pre-filled credentials)
+- [ ] If using pre-filled credentials, ensure file is on secure removable media only
 
 ### Encryption Considerations
-- Boot partition (`/boot`) MUST remain unencrypted for systemd-boot
-- You'll need to enter encryption password on every boot
-- Consider TPM2 auto-unlock for convenience (requires additional configuration)
-- Separate `/home` encryption is possible but not configured in current profile
+
+- **Boot partition** (`/boot`) MUST remain unencrypted for systemd-boot
+- Current config encrypts **both root and home** partitions
+- You'll need to enter LUKS password on **every boot**
+- Same password unlocks both root and home (single encryption password)
+- Consider TPM2 auto-unlock for convenience (requires post-install configuration)
+- LUKS encryption adds negligible performance overhead on modern hardware
 
 ### Post-Installation
+
 After installation completes:
 1. Reboot and login
 2. Clone your dotfiles:
@@ -119,39 +261,106 @@ After installation completes:
 
 ## Troubleshooting
 
-### Profile Validation
-To check if your profile is valid JSON:
+### Configuration Validation
+
+Validate your JSON files before installation:
+
 ```bash
-python -m json.tool thinkpad-e16.json
+# Check configuration syntax
+python -m json.tool user_configuration.json
+
+# Check credentials syntax
+python -m json.tool user_credentials.json
 ```
 
-### Disk Device Name
-If your disk isn't `/dev/nvme0n1`, update the profile:
+### Disk Device Name Issues
+
+If your disk isn't `/dev/nvme0n1`:
+
 ```bash
-# Check your disk name
+# Check your actual disk device
 lsblk
 
-# Edit profile and change "device": "/dev/nvme0n1" to your actual device
+# Edit configuration and update device path
+nano user_configuration.json
+# Find: "device": "/dev/nvme0n1"
+# Change to your actual device (e.g., "/dev/sda")
 ```
+
+### Password Not Being Accepted
+
+If archinstall doesn't accept your credentials file:
+- Ensure passwords are plain text strings (archinstall handles hashing)
+- Verify JSON syntax is valid (no trailing commas, proper quotes)
+- Try leaving passwords empty and entering them interactively instead
 
 ### Version Compatibility
-These profiles were created for archinstall version 2.8.3. If you encounter issues:
-- Check archinstall version: `archinstall --version`
-- Update to latest: `pacman -Sy archinstall`
-- Consult archinstall documentation for schema changes
 
-## Profile Maintenance
+This configuration was created with archinstall version **3.0.11**. If you encounter issues:
 
-When making system changes, consider updating these profiles:
-- Added essential packages? Update `packages` array
-- Changed partition scheme? Update `disk_config`
-- Modified system settings? Update respective configuration sections
-
-To export current system configuration (requires booting into installation media):
 ```bash
-# From running system, document current state
-pacman -Qe > explicitly-installed.txt
+# Check your archinstall version
+archinstall --version
+
+# Update to latest (from installation media)
+pacman -Sy archinstall
+
+# Schema may change between versions - consult documentation
 ```
+
+### Configuration Schema Changes
+
+If the configuration fails to load:
+- Archinstall schema may have changed between versions
+- Generate a new config: run `archinstall`, configure manually, save configuration
+- Compare with these files and merge your customizations
+
+## Configuration Maintenance
+
+### Keeping Configurations Updated
+
+When making system changes, keep configurations in sync:
+
+**Added essential packages?**
+```bash
+# List explicitly installed packages
+pacman -Qe > /tmp/packages.txt
+
+# Update user_configuration.json packages array
+# Add core packages you want in fresh installs
+```
+
+**Changed partition scheme?**
+- Document new layout
+- Update `disk_config` in `user_configuration.json`
+- Test configuration on VM before physical installation
+
+**Modified system settings?**
+- Update relevant sections in `user_configuration.json`
+- Locale, timezone, mirrors, services, etc.
+
+### Exporting Current Configuration
+
+To generate a fresh configuration from a running system:
+
+```bash
+# Boot into Arch installation media
+# Mount your system and chroot (optional)
+
+# Run archinstall to generate new config
+archinstall --dry-run --save-config /path/to/new_config.json
+
+# Compare with existing configuration
+# Merge changes as needed
+```
+
+### Security Best Practices
+
+- **Never commit actual passwords** to git repositories
+- Keep `user_credentials.json` template with empty passwords in repo
+- Store actual credentials on encrypted removable media only
+- Consider using a password manager for installation passwords
+- Rotate passwords regularly, especially encryption passwords
 
 ## References
 
