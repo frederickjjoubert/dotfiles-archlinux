@@ -12,7 +12,9 @@ git
 grim
 gst-plugin-pipewire
 htop
+hypridle
 hyprland
+hyprlock
 hyprpaper
 iwd
 kitty
