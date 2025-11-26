@@ -91,7 +91,8 @@
   "disk_encryption": null,
   "hostname": "thinkpad",
   "kernels": [
-    "linux"
+    "linux",
+    "linux-lts"
   ],
   "locale_config": {
     "kb_layout": "us",
@@ -136,7 +137,7 @@
     "qt6-wayland",
     "qt5-wayland"
   ],
-  "parallel downloads": 5,
+  "parallel_downloads": 5,
   "profile_config": null,
   "save_config": null,
   "script": "guided",
