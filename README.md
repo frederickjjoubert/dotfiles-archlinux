@@ -77,15 +77,7 @@ git --git-dir=$HOME/.dotfiles/ --work-tree=$HOME config user.email "20562845+fre
 git --git-dir=$HOME/.dotfiles/ --work-tree=$HOME config status.showUntrackedFiles no
 ```
 
-#### 5. Checkout the Customization Branch
-
-Switch to the customization branch:
-
-```bash
-git --git-dir=$HOME/.dotfiles/ --work-tree=$HOME checkout customization
-```
-
-#### 6. Restore All Dotfiles
+#### 5. Restore All Dotfiles
 
 If any files show as deleted, restore them:
 
@@ -93,7 +85,7 @@ If any files show as deleted, restore them:
 git --git-dir=$HOME/.dotfiles/ --work-tree=$HOME restore .
 ```
 
-#### 7. Reload Shell Configuration
+#### 6. Reload Shell Configuration
 
 Source the new `.bashrc` to activate the `config` alias:
 
@@ -124,8 +116,7 @@ config status
 
 Add a new dotfile to track:
 ```bash
-config add .vimrc
-config add .config/i3/config
+config add .bashrc
 ```
 
 Commit changes:
@@ -140,7 +131,7 @@ config push
 
 View all tracked files:
 ```bash
-config ls-tree -r customization --name-only
+config ls-tree -r main --name-only
 ```
 
 See changes in tracked files:

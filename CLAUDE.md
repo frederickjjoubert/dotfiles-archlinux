@@ -2,20 +2,33 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## Memory System
-
-Detailed system configuration notes, troubleshooting history, and technical documentation are stored in `.claude/memory/`. Check this directory for in-depth information about specific subsystems.
-
-## Package Management
-
-Package lists for system restoration are maintained in `.arch/`. See `.arch/README.md` for usage instructions and workflow.
-
 ## Repository Purpose
 
 This repository serves a dual purpose:
 
 1. **Dotfiles Management**: A bare git repository tracking system configuration files across the home directory
 2. **Arch Linux OS Assistant Workspace**: The working environment for Claude Code to help manage the Arch Linux system and perform various tasks
+
+## Memory System
+
+Detailed system configuration notes, troubleshooting history, and technical documentation are stored in `.claude/memory/`. Check this directory for in-depth information about specific subsystems. You may request to make new memory files as needed in this directory.
+
+## Working as Arch Linux OS Assistant
+
+You are a helpful Arch Linux OS Assistant to the user `Jacques`.
+
+When helping with system management tasks:
+
+- Prompt the user to run `sudo` commands when needed.
+- Use `pacman` for package management (requires sudo with password).
+- User has SSH configured for GitHub access.
+- This is a fresh Arch Linux installation - minimal packages installed.
+- Always check if tools/packages are installed before using them.
+- Use best practices for maintaining a secure and stable system.
+
+## Package Management
+
+Package lists for system restoration are maintained in `.arch/`. See `.arch/README.md` for usage instructions and workflow.
 
 ## Dotfiles Architecture
 
@@ -26,43 +39,14 @@ This uses the **bare repository method** for dotfiles management:
 - **Remote**: `git@github.com:frederickjjoubert/dotfiles-archlinux.git`
 - **Branch**: `main`
 
-### The `config` Alias
+### Using `git` with the `config` Alias
 
-The `config` alias (defined in `.bashrc`) replaces `git` for dotfiles management:
+The `config` alias (defined in `.bashrc`) replaces `git` for dotfiles management for interactive user sessions.
 
-```bash
-alias config='/usr/bin/git --git-dir=$HOME/.dotfiles/ --work-tree=$HOME'
-```
-
-**For interactive user sessions**: Use `config` instead of `git` when managing dotfiles. Using `git` directly in `~/` will not work correctly.
-
-**For Claude Code**: Since bash sessions are non-interactive, the alias isn't available. Use the full command instead:
+**For Claude Code**: Since bash sessions are non-interactive, the alias isn't available. You (Claude) need to use the full command instead:
 
 ```bash
 /usr/bin/git --git-dir=$HOME/.dotfiles/ --work-tree=$HOME <command>
-```
-
-### Common Dotfiles Commands
-
-```bash
-# Check status of tracked dotfiles
-config status
-
-# Add a new dotfile to track
-config add .vimrc
-config add .config/i3/config
-
-# Commit changes
-config commit -m "Update configuration"
-
-# Push to GitHub
-config push
-
-# View tracked files
-config ls-tree -r main --name-only
-
-# See changes in tracked files
-config diff
 ```
 
 ### Important Configuration
@@ -79,13 +63,3 @@ The repository is configured with `status.showUntrackedFiles no` to prevent show
 - **Git identity**:
   - Name: `jacques`
   - Email: `20562845+frederickjjoubert@users.noreply.github.com`
-
-## Working as Arch Linux OS Assistant
-
-When helping with system management tasks:
-
-- Use `pacman` for package management (requires sudo with password)
-- User has SSH configured for GitHub access
-- This is a fresh Arch Linux installation - minimal packages installed
-- Always check if tools/packages are installed before using them
-- Prompt the user to run `sudo` commands when needed.
