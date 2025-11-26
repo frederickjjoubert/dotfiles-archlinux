@@ -38,6 +38,34 @@ yay -S --needed - < ~/.arch/aurlist.txt
 
 The `--needed` flag skips packages that are already installed.
 
+## Manual Installation Steps
+
+Some tools require manual installation after restoring packages:
+
+### Node Version Manager (nvm)
+
+```bash
+# Install nvm (v0.40.3)
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash
+
+# Reload shell or source bashrc
+source ~/.bashrc
+
+# Install Node.js (example)
+nvm install node
+```
+
+The nvm initialization code is already in `.bashrc`, so it will work after installation.
+
+### iwd Configuration
+
+After system restore, copy the iwd config back to system location:
+
+```bash
+sudo cp ~/.config/iwd/main.conf /etc/iwd/main.conf
+sudo systemctl restart iwd
+```
+
 ## Notes
 
 - Only explicitly installed packages are tracked (not dependencies)
