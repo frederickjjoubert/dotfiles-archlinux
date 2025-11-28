@@ -22,28 +22,46 @@ This repository serves a dual purpose:
 - `.claude/` - Claude Code memory and documentation
 - `.config/` - Application configurations
   - `hypr/` - Hyprland window manager configuration
+  - `waybar/` - Waybar status bar configuration
+  - `wlogout/` - Wlogout logout menu configuration
   - `iwd/` - Internet Wireless Daemon configuration
 - `scripts/` - Automation scripts
-  - `post-install-setup.sh` - Automated post-installation setup
+  - `post-install-setup.sh` - Automated post-installation setup (uses HTTPS)
+  - `switch-to-ssh.sh` - Convert dotfiles remote from HTTPS to SSH
 
 ## Quick Start (Fresh System)
 
 For a completely automated setup on a fresh Arch Linux installation:
 
 ```bash
-# Ensure you have git installed and SSH keys configured for GitHub
+# Ensure you have git installed
 sudo pacman -S git
 
-# Run the automated setup script
+# Run the automated setup script (uses HTTPS, no SSH required)
 curl -fsSL https://raw.githubusercontent.com/frederickjjoubert/dotfiles-archlinux/main/scripts/post-install-setup.sh | bash
 ```
 
 This script will:
-- Clone and configure the dotfiles repository
+- Clone and configure the dotfiles repository (via HTTPS)
 - Install all official and AUR packages
 - Set up Rust toolchain and nvm
 - Configure system settings
 - Prompt for optional configurations
+
+**After Installation - Enable Push Access**:
+
+The initial setup uses HTTPS (read-only). To enable pushing changes to GitHub:
+
+```bash
+# 1. Generate an SSH key (if you don't have one)
+ssh-keygen -t ed25519 -C "your_email@example.com"
+
+# 2. Add the key to GitHub: https://github.com/settings/keys
+cat ~/.ssh/id_ed25519.pub
+
+# 3. Switch dotfiles remote to SSH
+bash ~/scripts/switch-to-ssh.sh
+```
 
 **Safety Features**:
 - Detects existing setups and aborts to prevent accidental overwrites
@@ -66,33 +84,30 @@ bash ~/scripts/post-install-setup.sh --force
 
 - Arch Linux installation
 - Git installed (`sudo pacman -S git`)
-- SSH key configured for GitHub access
 
 ### Initial Setup (Fresh System)
 
 If you prefer to set up manually, follow these steps in order:
 
-#### 1. Add GitHub to Known Hosts
+#### 1. Clone the Repository
+
+Clone the repository using HTTPS (no SSH key required):
 
 ```bash
+git clone https://github.com/frederickjjoubert/dotfiles-archlinux.git .dotfiles
+```
+
+Alternatively, if you already have SSH keys set up:
+
+```bash
+# Add GitHub to known_hosts first
 ssh-keyscan github.com >> ~/.ssh/known_hosts
-```
 
-Or test your SSH connection (will prompt to accept host key):
-
-```bash
-ssh -T git@github.com
-```
-
-#### 2. Clone the Repository
-
-Clone the repository into `~/.dotfiles/`:
-
-```bash
+# Then clone with SSH
 git clone git@github.com:frederickjjoubert/dotfiles-archlinux.git .dotfiles
 ```
 
-#### 3. Convert to Bare Repository
+#### 2. Convert to Bare Repository
 
 Move the git directory and convert it to a bare repository:
 
@@ -103,7 +118,7 @@ mv ~/dotfiles-tmp ~/.dotfiles
 git --git-dir=$HOME/.dotfiles/ config --bool core.bare true
 ```
 
-#### 4. Configure Git Settings
+#### 3. Configure Git Settings
 
 Set up your git identity and hide untracked files:
 
@@ -113,7 +128,7 @@ git --git-dir=$HOME/.dotfiles/ --work-tree=$HOME config user.email "20562845+fre
 git --git-dir=$HOME/.dotfiles/ --work-tree=$HOME config status.showUntrackedFiles no
 ```
 
-#### 5. Restore All Dotfiles
+#### 4. Restore All Dotfiles
 
 If any files show as deleted, restore them:
 
@@ -121,7 +136,7 @@ If any files show as deleted, restore them:
 git --git-dir=$HOME/.dotfiles/ --work-tree=$HOME restore .
 ```
 
-#### 6. Reload Shell Configuration
+#### 5. Reload Shell Configuration
 
 Source the new `.bashrc` to activate the `config` alias:
 
@@ -130,6 +145,14 @@ source ~/.bashrc
 ```
 
 The `config` alias will be available in all new shell sessions.
+
+#### 6. Switch to SSH (Optional)
+
+If you cloned with HTTPS and want to enable push access:
+
+```bash
+bash ~/scripts/switch-to-ssh.sh
+```
 
 ## Usage
 

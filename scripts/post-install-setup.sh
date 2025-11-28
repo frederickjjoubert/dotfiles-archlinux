@@ -48,7 +48,7 @@ BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 # Configuration
-DOTFILES_REPO="git@github.com:frederickjjoubert/dotfiles-archlinux.git"
+DOTFILES_REPO="https://github.com/frederickjjoubert/dotfiles-archlinux.git"
 DOTFILES_DIR="$HOME/.dotfiles"
 GIT_NAME="jacques"
 GIT_EMAIL="20562845+frederickjjoubert@users.noreply.github.com"
@@ -172,47 +172,16 @@ detect_existing_setup() {
 check_prerequisites() {
     log_step "Checking prerequisites"
 
-    local missing_prereqs=0
-
     if ! command_exists git; then
         log_error "git is not installed. Please install it first: sudo pacman -S git"
-        missing_prereqs=1
+        exit 1
     else
         log_success "git is installed"
     fi
 
-    if [[ ! -f "$HOME/.ssh/id_rsa" ]] && [[ ! -f "$HOME/.ssh/id_ed25519" ]]; then
-        log_error "No SSH key found. Please set up SSH keys for GitHub access first."
-        missing_prereqs=1
-    else
-        log_success "SSH key found"
-    fi
-
-    if [[ $missing_prereqs -eq 1 ]]; then
-        log_error "Prerequisites not met. Please fix the above issues and try again."
-        exit 1
-    fi
+    log_info "Initial setup will use HTTPS (no SSH key required)"
 }
 
-# Setup GitHub SSH
-setup_github_ssh() {
-    log_step "Setting up GitHub SSH"
-
-    if ssh-keygen -F github.com >/dev/null 2>&1; then
-        log_info "GitHub already in known_hosts"
-    else
-        log_info "Adding GitHub to known_hosts"
-        ssh-keyscan github.com >> "$HOME/.ssh/known_hosts" 2>/dev/null
-        log_success "GitHub added to known_hosts"
-    fi
-
-    log_info "Testing GitHub SSH connection"
-    if ssh -T git@github.com 2>&1 | grep -q "successfully authenticated"; then
-        log_success "GitHub SSH authentication successful"
-    else
-        log_warning "GitHub SSH test completed (this is expected to show 'permission denied' if key is not added to GitHub)"
-    fi
-}
 
 # Clone and setup dotfiles
 setup_dotfiles() {
@@ -476,7 +445,6 @@ main() {
     # Run setup steps
     check_prerequisites
     detect_existing_setup
-    setup_github_ssh
     setup_dotfiles
     update_system
     install_official_packages
@@ -496,7 +464,13 @@ main() {
     echo "  1. Restart your shell or run: source ~/.bashrc"
     echo "  2. The 'config' alias is available for managing dotfiles"
     echo "  3. Review and apply any additional configurations in .arch/README.md"
-    echo "  4. Reboot to ensure all services start correctly"
+    echo ""
+    log_warning "IMPORTANT: SSH Setup"
+    echo "  Your dotfiles are currently using HTTPS (read-only)."
+    echo "  To enable push access:"
+    echo "    1. Generate SSH key: ssh-keygen -t ed25519 -C \"your_email@example.com\""
+    echo "    2. Add key to GitHub: https://github.com/settings/keys"
+    echo "    3. Run: bash ~/scripts/switch-to-ssh.sh"
     echo ""
 
     if confirm "Reboot now?"; then
