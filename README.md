@@ -23,8 +23,44 @@ This repository serves a dual purpose:
 - `.config/` - Application configurations
   - `hypr/` - Hyprland window manager configuration
   - `iwd/` - Internet Wireless Daemon configuration
+- `scripts/` - Automation scripts
+  - `post-install-setup.sh` - Automated post-installation setup
 
-## Setup
+## Quick Start (Fresh System)
+
+For a completely automated setup on a fresh Arch Linux installation:
+
+```bash
+# Ensure you have git installed and SSH keys configured for GitHub
+sudo pacman -S git
+
+# Run the automated setup script
+curl -fsSL https://raw.githubusercontent.com/frederickjjoubert/dotfiles-archlinux/main/scripts/post-install-setup.sh | bash
+```
+
+This script will:
+- Clone and configure the dotfiles repository
+- Install all official and AUR packages
+- Set up Rust toolchain and nvm
+- Configure system settings
+- Prompt for optional configurations
+
+**Safety Features**:
+- Detects existing setups and aborts to prevent accidental overwrites
+- Prompts for confirmation at key steps
+- Supports `--dry-run` to preview changes without making modifications
+- Requires your sudo password for system changes
+
+**Options**:
+```bash
+# Preview what would happen without making changes
+bash ~/scripts/post-install-setup.sh --dry-run
+
+# Force run on an already-configured system (use with caution!)
+bash ~/scripts/post-install-setup.sh --force
+```
+
+## Manual Setup
 
 ### Prerequisites
 
@@ -34,7 +70,7 @@ This repository serves a dual purpose:
 
 ### Initial Setup (Fresh System)
 
-Follow these steps in order to set up the dotfiles on a new system:
+If you prefer to set up manually, follow these steps in order:
 
 #### 1. Add GitHub to Known Hosts
 
