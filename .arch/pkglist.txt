@@ -23,6 +23,7 @@ libpulse
 linux
 linux-firmware
 linux-lts
+lvm2
 nano
 network-manager-applet
 networkmanager
