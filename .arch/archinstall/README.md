@@ -5,13 +5,17 @@ This directory contains archinstall configuration files for reproducible Arch Li
 ## Configuration Files
 
 ### `user_configuration.json`
+
 Complete system configuration including:
 
 **Key Features:**
-- **Disk Layout**: 3-partition layout on `/dev/nvme0n1`:
-  - 1GB `/boot` (FAT32, ESP)
-  - 50GB `/` (ext4, LUKS encrypted)
-  - ~880GB `/home` (ext4, LUKS encrypted)
+
+- **Disk Layout**: LVM on LUKS on `/dev/nvme0n1`:
+  - 1GB `/boot` (FAT32, ESP, unencrypted)
+  - 930GB LUKS-encrypted partition containing LVM volume group `vg0`:
+    - 50GB `/` (ext4, logical volume `root`)
+    - 32GB swap (logical volume `swap`)
+    - 847GB `/home` (ext4, logical volume `home`)
 - **Boot**: systemd-boot bootloader
 - **Desktop**: Hyprland (Wayland compositor) with SDDM greeter
 - **Graphics**: AMD/ATI open-source drivers
@@ -20,13 +24,16 @@ Complete system configuration including:
 - **Network**: NetworkManager
 - **Kernels**: linux and linux-lts
 - **Locale**: US keyboard, en_US.UTF-8, Pacific timezone
-- **Encryption**: LUKS encryption on both root and home partitions
+- **Encryption**: LVM on LUKS (single encrypted partition with LVM inside)
+- **Packages**: git
 
 ### `user_credentials.json`
+
 User accounts and passwords (template with empty passwords).
 
 **Fields:**
-- `encryption_password`: LUKS disk encryption password (for root and home partitions)
+
+- `encryption_password`: LUKS disk encryption password (unlocks the encrypted LVM partition)
 - `root_enc_password`: Root user account password
 - `users[].enc_password`: User account password(s)
 - `users[].username`: Username (currently: `jacques`)
@@ -38,11 +45,13 @@ User accounts and passwords (template with empty passwords).
 The `enc_password` fields use **plain text passwords**, not hashes. Despite the "enc" prefix, you provide passwords as normal strings and archinstall handles the hashing automatically during installation.
 
 **Option 1 - Interactive (Recommended):**
+
 - Leave all password fields as empty strings: `""`
 - Archinstall will prompt you to enter passwords during installation
 - Most secure - no passwords stored in files
 
 **Option 2 - Automated:**
+
 - Fill password fields with plain text: `"encryption_password": "MySecurePass123"`
 - Archinstall will hash these automatically
 - Convenient for automated installations
@@ -55,6 +64,7 @@ The `enc_password` fields use **plain text passwords**, not hashes. Despite the 
 **Best for**: Fully automated installation with minimal prompts
 
 1. **Prepare credentials file** (on a secure system before installation):
+
    ```bash
    # Edit user_credentials.json and add your passwords as plain text
    # archinstall will handle hashing automatically
@@ -77,6 +87,7 @@ The `enc_password` fields use **plain text passwords**, not hashes. Despite the 
 2. **Boot from Arch Linux installation media**
 
 3. **Copy configuration files**:
+
    ```bash
    # If files are on USB drive
    mount /dev/sdX1 /mnt
@@ -92,6 +103,7 @@ The `enc_password` fields use **plain text passwords**, not hashes. Despite the 
    ```
 
 4. **Run archinstall**:
+
    ```bash
    archinstall --config /root/user_configuration.json --creds /root/user_credentials.json
    ```
@@ -105,12 +117,14 @@ The `enc_password` fields use **plain text passwords**, not hashes. Despite the 
 1. **Boot from Arch Linux installation media**
 
 2. **Copy only the configuration file**:
+
    ```bash
    # Leave user_credentials.json with empty passwords
    curl -O https://raw.githubusercontent.com/frederickjjoubert/dotfiles-archlinux/main/.arch/archinstall/user_configuration.json
    ```
 
 3. **Run archinstall**:
+
    ```bash
    archinstall --config /root/user_configuration.json
    ```
@@ -124,9 +138,11 @@ The `enc_password` fields use **plain text passwords**, not hashes. Despite the 
 
 1. Boot from Arch Linux installation media
 2. Run archinstall interactively:
+
    ```bash
    archinstall
    ```
+
 3. Load `user_configuration.json` when prompted
 4. Review/modify settings as needed
 5. Enter passwords when prompted
@@ -138,6 +154,7 @@ The `enc_password` fields use **plain text passwords**, not hashes. Despite the 
 Edit `user_credentials.json` to:
 
 **Add/modify users**:
+
 ```json
 "users": [
   {
@@ -156,6 +173,7 @@ Edit `user_credentials.json` to:
 ```
 
 **Password handling**:
+
 - Leave `enc_password` fields empty (`""`) to be prompted during installation
 - Or fill with plain text passwords (archinstall hashes them automatically)
 - Never commit files with actual passwords to version control!
@@ -179,13 +197,14 @@ Edit `user_configuration.json` to add packages:
 ]
 ```
 
-The current configuration has an empty packages array - Hyprland and its dependencies are installed via the profile, but you'll want to add your essential tools here.
+Hyprland and its dependencies are installed via the profile. The current configuration includes `git` as an additional package.
 
 ### Adjusting Disk Layout
 
-Modify `disk_config.device_modifications[0].partitions` in `user_configuration.json`:
+Modify `disk_config.device_modifications[0].partitions` for physical partitions and `disk_config.lvm_config.vol_groups[0].volumes` for LVM logical volumes in `user_configuration.json`:
 
 **Change partition sizes**:
+
 ```json
 "size": {
   "unit": "GiB",    // or "B" for bytes
@@ -193,38 +212,55 @@ Modify `disk_config.device_modifications[0].partitions` in `user_configuration.j
 }
 ```
 
+**Change LVM volume sizes**:
+
+```json
+"length": {
+  "unit": "GiB",
+  "value": 100
+}
+```
+
 **Change device** (if not using `/dev/nvme0n1`):
+
 ```json
 "device": "/dev/sda"  // or your actual device
 ```
 
 **Current layout**:
-- Boot: 1 GiB
-- Root: 50 GiB
-- Home: ~880 GiB (remaining space)
+
+- Physical partitions:
+  - Boot: 1 GiB (unencrypted)
+  - LUKS partition: 930 GiB (encrypted, contains LVM)
+- LVM logical volumes (inside encrypted partition):
+  - Root: 50 GiB
+  - Swap: 32 GiB
+  - Home: 847 GiB
 
 ### Encryption Configuration
 
-The current configuration uses LUKS encryption on both root and home partitions.
+The current configuration uses LVM on LUKS encryption. A single encrypted LUKS partition contains an LVM volume group with logical volumes for root, swap, and home.
 
 **To disable encryption**:
-Remove or empty the `disk_encryption` section:
+Remove or set to null the `disk_encryption` section:
+
 ```json
 "disk_encryption": null
 ```
 
-**To encrypt only root** (not home):
-Modify the `partitions` array in `disk_encryption`:
+**To use simple LUKS** (without LVM):
+Change encryption type and remove LVM config:
+
 ```json
 "disk_encryption": {
   "encryption_type": "luks",
   "partitions": [
-    "b3a21f73-860c-4203-b557-a805d6c991b2"  // root only
+    "partition-uuid-here"
   ]
 }
 ```
 
-**Advanced**: Consider TPM2 auto-unlock (requires post-install configuration)
+**Advanced**: Consider TPM2 auto-unlock for convenience (requires post-install configuration)
 
 ## Important Notes
 
@@ -241,29 +277,35 @@ Modify the `partitions` array in `disk_encryption`:
 ### Encryption Considerations
 
 - **Boot partition** (`/boot`) MUST remain unencrypted for systemd-boot
-- Current config encrypts **both root and home** partitions
+- Current config uses **LVM on LUKS**: single encrypted partition containing all LVM volumes
+- Root, swap, and home are all inside the encrypted LVM volume group
 - You'll need to enter LUKS password on **every boot**
-- Same password unlocks both root and home (single encryption password)
+- Single password unlocks the entire encrypted partition (all volumes accessible)
 - Consider TPM2 auto-unlock for convenience (requires post-install configuration)
 - LUKS encryption adds negligible performance overhead on modern hardware
 
 ### Post-Installation
 
 After installation completes:
+
 1. Reboot and login
 2. Clone your dotfiles:
+
    ```bash
    git clone --bare git@github.com:frederickjjoubert/dotfiles-archlinux.git $HOME/.dotfiles
    /usr/bin/git --git-dir=$HOME/.dotfiles/ --work-tree=$HOME checkout
    ```
+
 3. Install additional packages from `.arch/packages/`
 4. Configure your environment
 
 ## Hibernation
 
 After using this configuration for a fresh install, you'll need to:
-  1. Add resume=/dev/mapper/swap to kernel parameters (in /boot/loader/entries/*.conf)
-  2. Configure initramfs hooks for resume support
+
+  1. Add `resume=/dev/vg0/swap` to kernel parameters (in `/boot/loader/entries/*.conf`)
+  2. Configure initramfs hooks for resume support (add `resume` hook after `lvm2` in `/etc/mkinitcpio.conf`)
+  3. Regenerate initramfs: `mkinitcpio -P`
 
 ## Troubleshooting
 
@@ -296,13 +338,14 @@ nano user_configuration.json
 ### Password Not Being Accepted
 
 If archinstall doesn't accept your credentials file:
+
 - Ensure passwords are plain text strings (archinstall handles hashing)
 - Verify JSON syntax is valid (no trailing commas, proper quotes)
 - Try leaving passwords empty and entering them interactively instead
 
 ### Version Compatibility
 
-This configuration was created with archinstall version **3.0.11**. If you encounter issues:
+This configuration was created with archinstall version **3.0.13**. If you encounter issues:
 
 ```bash
 # Check your archinstall version
@@ -317,6 +360,7 @@ pacman -Sy archinstall
 ### Configuration Schema Changes
 
 If the configuration fails to load:
+
 - Archinstall schema may have changed between versions
 - Generate a new config: run `archinstall`, configure manually, save configuration
 - Compare with these files and merge your customizations
@@ -328,6 +372,7 @@ If the configuration fails to load:
 When making system changes, keep configurations in sync:
 
 **Added essential packages?**
+
 ```bash
 # List explicitly installed packages
 pacman -Qe > /tmp/packages.txt
@@ -337,11 +382,13 @@ pacman -Qe > /tmp/packages.txt
 ```
 
 **Changed partition scheme?**
+
 - Document new layout
 - Update `disk_config` in `user_configuration.json`
 - Test configuration on VM before physical installation
 
 **Modified system settings?**
+
 - Update relevant sections in `user_configuration.json`
 - Locale, timezone, mirrors, services, etc.
 

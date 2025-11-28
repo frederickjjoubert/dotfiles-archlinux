@@ -63,16 +63,16 @@
                                 "unit": "B",
                                 "value": 512
                             },
-                            "unit": "B",
-                            "value": 999331225600
+                            "unit": "GiB",
+                            "value": 930
                         },
                         "start": {
                             "sector_size": {
                                 "unit": "B",
                                 "value": 512
                             },
-                            "unit": "B",
-                            "value": 1074790400
+                            "unit": "MiB",
+                            "value": 1025
                         },
                         "status": "create",
                         "type": "primary"
@@ -116,7 +116,7 @@
                         },
                         {
                             "btrfs": [],
-                            "fs_type": "swap",
+                            "fs_type": "linux-swap",
                             "length": {
                                 "sector_size": {
                                     "unit": "B",
@@ -139,8 +139,8 @@
                                     "unit": "B",
                                     "value": 512
                                 },
-                                "unit": "B",
-                                "value": 911087198208
+                                "unit": "GiB",
+                                "value": 847
                             },
                             "mount_options": [],
                             "mountpoint": "/home",
