@@ -259,6 +259,12 @@ After installation completes:
 3. Install additional packages from `.arch/packages/`
 4. Configure your environment
 
+## Hibernation
+
+After using this configuration for a fresh install, you'll need to:
+  1. Add resume=/dev/mapper/swap to kernel parameters (in /boot/loader/entries/*.conf)
+  2. Configure initramfs hooks for resume support
+
 ## Troubleshooting
 
 ### Configuration Validation
