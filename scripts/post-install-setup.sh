@@ -397,6 +397,42 @@ optional_configurations() {
         fi
     fi
 
+    # Hibernation configuration (requires LVM swap partition)
+    if [[ -f "$HOME/.arch/etc/fstab" ]] && [[ -f "$HOME/.arch/etc/mkinitcpio.conf" ]]; then
+        if confirm "Configure hibernation with LVM swap partition?"; then
+            log_info "Applying hibernation configuration"
+
+            # Copy fstab
+            sudo cp "$HOME/.arch/etc/fstab" /etc/fstab
+            log_success "fstab updated with swap partition"
+
+            # Copy bootloader entries
+            if [[ -d "$HOME/.arch/boot/loader/entries" ]]; then
+                sudo cp "$HOME/.arch/boot/loader/entries/"*.conf /boot/loader/entries/
+                log_success "Bootloader entries updated with resume parameter"
+            fi
+
+            # Copy mkinitcpio.conf
+            sudo cp "$HOME/.arch/etc/mkinitcpio.conf" /etc/mkinitcpio.conf
+            log_success "mkinitcpio.conf updated with resume hook"
+
+            # Rebuild initramfs
+            log_info "Rebuilding initramfs (this may take a moment)"
+            sudo mkinitcpio -P
+            log_success "Initramfs rebuilt"
+
+            # Activate swap partition if it exists
+            if [[ -e /dev/mapper/vg0-swap ]]; then
+                if ! swapon --show | grep -q vg0-swap; then
+                    sudo swapon --priority 50 /dev/mapper/vg0-swap
+                    log_success "Swap partition activated"
+                fi
+            fi
+
+            log_success "Hibernation configured - reboot required to take effect"
+        fi
+    fi
+
     # Enable and start sddm
     if package_installed sddm; then
         if confirm "Enable SDDM display manager?"; then
