@@ -388,10 +388,10 @@ optional_configurations() {
     log_step "Optional system configurations"
 
     # iwd configuration
-    if [[ -f "$HOME/.config/iwd/main.conf" ]] && package_installed iwd; then
+    if [[ -f "$HOME/.arch/etc/iwd/main.conf" ]] && package_installed iwd; then
         if confirm "Copy iwd configuration to /etc/iwd/?"; then
             sudo mkdir -p /etc/iwd
-            sudo cp "$HOME/.config/iwd/main.conf" /etc/iwd/main.conf
+            sudo cp "$HOME/.arch/etc/iwd/main.conf" /etc/iwd/main.conf
             sudo systemctl restart iwd
             log_success "iwd configured and restarted"
         fi

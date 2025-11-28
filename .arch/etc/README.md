@@ -2,6 +2,31 @@
 
 This directory contains system configuration files for reproducible Arch Linux setup.
 
+## Network Configuration (iwd)
+
+Configuration for the iwd wireless daemon to prevent aggressive roaming on mesh networks.
+
+### Files Included
+
+- `iwd/main.conf` - iwd configuration with roaming optimizations
+
+### Installation
+
+```bash
+# Copy iwd configuration
+sudo cp ~/.arch/etc/iwd/main.conf /etc/iwd/main.conf
+
+# Restart iwd service
+sudo systemctl restart iwd
+```
+
+### Configuration Details
+
+- Disables NetworkManager integration (using NetworkManager's built-in WiFi)
+- Less aggressive roaming thresholds for mesh networks
+- Disables automatic roaming scans to prevent constant AP switching
+- Increased roam retry interval (120 seconds)
+
 ## Hibernation Configuration
 
 These files enable hibernation with the LVM swap partition.
