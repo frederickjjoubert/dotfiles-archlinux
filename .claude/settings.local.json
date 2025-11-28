@@ -4,7 +4,8 @@
       "WebSearch",
       "WebFetch(domain:docs.gtk.org)",
       "WebFetch(domain:wiki.hypr.land)",
-      "WebFetch(domain:github.com)"
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:archinstall.archlinux.page)"
     ],
     "deny": [],
     "ask": []
