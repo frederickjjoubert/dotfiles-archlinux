@@ -4,6 +4,7 @@ base-devel
 blueman
 bluez
 bluez-utils
+discord
 dolphin
 dunst
 efibootmgr
@@ -31,6 +32,7 @@ pipewire-alsa
 pipewire-jack
 pipewire-pulse
 polkit-kde-agent
+proton-vpn-gtk-app
 qt5-wayland
 qt6-wayland
 reflector
