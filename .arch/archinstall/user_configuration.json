@@ -128,7 +128,7 @@
                             "mount_options": [],
                             "mountpoint": null,
                             "name": "swap",
-                            "obj_id": "lv-swap-id",
+                            "obj_id": "a51d1f99-5453-49b1-b9a7-e5a08363b5fd",
                             "status": "create"
                         },
                         {
@@ -145,7 +145,7 @@
                             "mount_options": [],
                             "mountpoint": "/home",
                             "name": "home",
-                            "obj_id": "lv-home-id",
+                            "obj_id": "fe6df8bf-6fe7-41b7-a9c1-8bebb3e1fcd0",
                             "status": "create"
                         }
                     ]
