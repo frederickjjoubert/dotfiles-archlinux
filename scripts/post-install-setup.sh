@@ -9,7 +9,7 @@
 # - Configures system settings
 #
 # Usage:
-#   curl -fsSL https://raw.githubusercontent.com/frederickjjoubert/dotfiles-archlinux/main/scripts/post-install-setup.sh | bash
+#   curl -fsSL https://raw.githubusercontent.com/frederickjjoubert/dotfiles-archlinux/main/scripts/post-install-setup.sh | bash -s -- --yes
 #
 # Or locally:
 #   bash ~/scripts/post-install-setup.sh
@@ -17,6 +17,7 @@
 # Options:
 #   --dry-run    Show what would be done without making changes
 #   --force      Skip existing system detection and proceed anyway
+#   --yes        Answer yes to all prompts (required for curl | bash)
 #
 
 set -e  # Exit on error
@@ -24,6 +25,7 @@ set -e  # Exit on error
 # Parse command line arguments
 DRY_RUN=false
 FORCE_RUN=false
+AUTO_YES=false
 
 for arg in "$@"; do
     case $arg in
@@ -33,6 +35,10 @@ for arg in "$@"; do
             ;;
         --force)
             FORCE_RUN=true
+            shift
+            ;;
+        --yes|-y)
+            AUTO_YES=true
             shift
             ;;
         *)
@@ -89,6 +95,10 @@ package_installed() {
 
 # Confirm before proceeding
 confirm() {
+    if [[ "$AUTO_YES" == true ]]; then
+        echo -e "${YELLOW}[CONFIRM]${NC} $1 [y/N]: y (auto)"
+        return 0
+    fi
     read -p "$(echo -e ${YELLOW}[CONFIRM]${NC} $1 [y/N]: )" -n 1 -r
     echo
     [[ $REPLY =~ ^[Yy]$ ]]

@@ -38,7 +38,7 @@ For a completely automated setup on a fresh Arch Linux installation:
 sudo pacman -S git
 
 # Run the automated setup script (uses HTTPS, no SSH required)
-curl -fsSL https://raw.githubusercontent.com/frederickjjoubert/dotfiles-archlinux/main/scripts/post-install-setup.sh | bash
+curl -fsSL https://raw.githubusercontent.com/frederickjjoubert/dotfiles-archlinux/main/scripts/post-install-setup.sh | bash -s -- --yes
 ```
 
 This script will:
