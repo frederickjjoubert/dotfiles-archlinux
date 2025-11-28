@@ -75,9 +75,13 @@ bash ~/scripts/switch-to-ssh.sh
 
 ```bash
 # Preview what would happen without making changes
-bash ~/scripts/post-install-setup.sh --dry-run
+curl -fsSL https://raw.githubusercontent.com/frederickjjoubert/dotfiles-archlinux/main/scripts/post-install-setup.sh | bash -s -- --dry-run
 
 # Force run on an already-configured system (use with caution!)
+curl -fsSL https://raw.githubusercontent.com/frederickjjoubert/dotfiles-archlinux/main/scripts/post-install-setup.sh | bash -s -- --force
+
+# Or if running locally:
+bash ~/scripts/post-install-setup.sh --dry-run
 bash ~/scripts/post-install-setup.sh --force
 ```
 
