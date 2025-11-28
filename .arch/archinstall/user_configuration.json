@@ -30,7 +30,7 @@
                         "fs_type": "fat32",
                         "mount_options": [],
                         "mountpoint": "/boot",
-                        "obj_id": "c2a58228-2332-4f88-8a37-092fe8a03b0e",
+                        "obj_id": "57bd8def-2938-4642-bf8f-702318ee151a",
                         "size": {
                             "sector_size": {
                                 "unit": "B",
@@ -57,14 +57,14 @@
                         "fs_type": "ext4",
                         "mount_options": [],
                         "mountpoint": "/",
-                        "obj_id": "b3a21f73-860c-4203-b557-a805d6c991b2",
+                        "obj_id": "cbdc62e7-03df-4b0d-91b7-df7a3ae9958e",
                         "size": {
                             "sector_size": {
                                 "unit": "B",
                                 "value": 512
                             },
-                            "unit": "GiB",
-                            "value": 50
+                            "unit": "B",
+                            "value": 999331225600
                         },
                         "start": {
                             "sector_size": {
@@ -76,46 +76,80 @@
                         },
                         "status": "create",
                         "type": "primary"
-                    },
-                    {
-                        "btrfs": [],
-                        "dev_path": null,
-                        "flags": [
-                            "linux-home"
-                        ],
-                        "fs_type": "ext4",
-                        "mount_options": [],
-                        "mountpoint": "/home",
-                        "obj_id": "677c000f-d1b3-42a6-bdce-8d8044c10b08",
-                        "size": {
-                            "sector_size": {
-                                "unit": "B",
-                                "value": 512
-                            },
-                            "unit": "B",
-                            "value": 945441210368
-                        },
-                        "start": {
-                            "sector_size": {
-                                "unit": "B",
-                                "value": 512
-                            },
-                            "unit": "B",
-                            "value": 54761881600
-                        },
-                        "status": "create",
-                        "type": "primary"
                     }
                 ],
                 "wipe": true
             }
         ],
         "disk_encryption": {
-            "encryption_type": "luks",
+            "encryption_type": "lvm_on_luks",
             "lvm_volumes": [],
             "partitions": [
-                "b3a21f73-860c-4203-b557-a805d6c991b2",
-                "677c000f-d1b3-42a6-bdce-8d8044c10b08"
+                "cbdc62e7-03df-4b0d-91b7-df7a3ae9958e"
+            ]
+        },
+        "lvm_config": {
+            "config_type": "default",
+            "vol_groups": [
+                {
+                    "lvm_pvs": [
+                        "cbdc62e7-03df-4b0d-91b7-df7a3ae9958e"
+                    ],
+                    "name": "vg0",
+                    "volumes": [
+                        {
+                            "btrfs": [],
+                            "fs_type": "ext4",
+                            "length": {
+                                "sector_size": {
+                                    "unit": "B",
+                                    "value": 512
+                                },
+                                "unit": "GiB",
+                                "value": 50
+                            },
+                            "mount_options": [],
+                            "mountpoint": "/",
+                            "name": "root",
+                            "obj_id": "ed2e3de9-7851-4ed7-8697-7991b66c522d",
+                            "status": "create"
+                        },
+                        {
+                            "btrfs": [],
+                            "fs_type": "swap",
+                            "length": {
+                                "sector_size": {
+                                    "unit": "B",
+                                    "value": 512
+                                },
+                                "unit": "GiB",
+                                "value": 32
+                            },
+                            "mount_options": [],
+                            "mountpoint": null,
+                            "name": "swap",
+                            "obj_id": "lv-swap-id",
+                            "status": "create"
+                        },
+                        {
+                            "btrfs": [],
+                            "fs_type": "ext4",
+                            "length": {
+                                "sector_size": {
+                                    "unit": "B",
+                                    "value": 512
+                                },
+                                "unit": "B",
+                                "value": 911087198208
+                            },
+                            "mount_options": [],
+                            "mountpoint": "/home",
+                            "name": "home",
+                            "obj_id": "lv-home-id",
+                            "status": "create"
+                        }
+                    ]
+                }
             ]
         }
     },
@@ -242,6 +276,7 @@
                 "http://mirror.colonelhosting.com/archlinux/$repo/os/$arch",
                 "https://mirror.colonelhosting.com/archlinux/$repo/os/$arch",
                 "https://us.arch.niranjan.co/$repo/os/$arch",
+                "https://arch.mirror.marcusspencer.us:4443/archlinux/$repo/os/$arch",
                 "https://us-mnz.soulharsh007.dev/archlinux/$repo/os/$arch",
                 "http://arch.miningtcup.me/$repo/os/$arch",
                 "https://arch.miningtcup.me/$repo/os/$arch",
@@ -268,7 +303,9 @@
         "type": "nm"
     },
     "ntp": true,
-    "packages": [],
+    "packages": [
+        "git"
+    ],
     "parallel_downloads": 0,
     "profile_config": {
         "gfx_driver": "AMD / ATI (open-source)",
@@ -289,5 +326,6 @@
     "services": [],
     "swap": true,
     "timezone": "US/Pacific",
-    "version": "3.0.11"
+    "uki": false,
+    "version": "3.0.13"
 }
