@@ -9,7 +9,7 @@
 # - Configures system settings
 #
 # Usage:
-#   curl -fsSL https://raw.githubusercontent.com/frederickjjoubert/dotfiles-archlinux/main/scripts/post-install-setup.sh | bash -s -- --yes
+#   curl -fsSL https://raw.githubusercontent.com/frederickjjoubert/dotfiles-archlinux/main/scripts/post-install-setup.sh | bash
 #
 # Or locally:
 #   bash ~/scripts/post-install-setup.sh
@@ -17,7 +17,7 @@
 # Options:
 #   --dry-run    Show what would be done without making changes
 #   --force      Skip existing system detection and proceed anyway
-#   --yes        Answer yes to all prompts (required for curl | bash)
+#   --yes        Answer yes to all prompts (for fully automated installs)
 #
 
 set -e  # Exit on error
@@ -93,13 +93,14 @@ package_installed() {
     pacman -Qi "$1" >/dev/null 2>&1
 }
 
-# Confirm before proceeding
+# Confirm before proceeding (reads from /dev/tty to work with curl | bash)
 confirm() {
     if [[ "$AUTO_YES" == true ]]; then
         echo -e "${YELLOW}[CONFIRM]${NC} $1 [y/N]: y (auto)"
         return 0
     fi
-    read -p "$(echo -e ${YELLOW}[CONFIRM]${NC} $1 [y/N]: )" -n 1 -r
+    echo -n -e "${YELLOW}[CONFIRM]${NC} $1 [y/N]: "
+    read -n 1 -r < /dev/tty
     echo
     [[ $REPLY =~ ^[Yy]$ ]]
 }
@@ -358,7 +359,7 @@ install_aur_packages() {
 install_nvm() {
     log_step "Installing Node Version Manager (nvm)"
 
-    if [[ -d "$HOME/.config/nvm" ]]; then
+    if [[ -d "$HOME/.nvm" ]]; then
         log_info "nvm is already installed"
         return 0
     fi
@@ -367,7 +368,7 @@ install_nvm() {
     curl -o- "https://raw.githubusercontent.com/nvm-sh/nvm/$NVM_VERSION/install.sh" | bash
 
     # Load nvm
-    export NVM_DIR="$HOME/.config/nvm"
+    export NVM_DIR="$HOME/.nvm"
     [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
 
     if command_exists nvm; then

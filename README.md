@@ -38,10 +38,11 @@ For a completely automated setup on a fresh Arch Linux installation:
 sudo pacman -S git
 
 # Run the automated setup script (uses HTTPS, no SSH required)
-curl -fsSL https://raw.githubusercontent.com/frederickjjoubert/dotfiles-archlinux/main/scripts/post-install-setup.sh | bash -s -- --yes
+curl -fsSL https://raw.githubusercontent.com/frederickjjoubert/dotfiles-archlinux/main/scripts/post-install-setup.sh | bash
 ```
 
 This script will:
+
 - Clone and configure the dotfiles repository (via HTTPS)
 - Install all official and AUR packages
 - Set up Rust toolchain and nvm
@@ -64,12 +65,14 @@ bash ~/scripts/switch-to-ssh.sh
 ```
 
 **Safety Features**:
+
 - Detects existing setups and aborts to prevent accidental overwrites
 - Prompts for confirmation at key steps
 - Supports `--dry-run` to preview changes without making modifications
 - Requires your sudo password for system changes
 
 **Options**:
+
 ```bash
 # Preview what would happen without making changes
 bash ~/scripts/post-install-setup.sh --dry-run
@@ -169,36 +172,43 @@ alias config='/usr/bin/git --git-dir=$HOME/.dotfiles/ --work-tree=$HOME'
 ### Common Commands
 
 Check status of tracked dotfiles:
+
 ```bash
 config status
 ```
 
 Add a new dotfile to track:
+
 ```bash
 config add .bashrc
 ```
 
 Commit changes:
+
 ```bash
 config commit -m "Update configuration"
 ```
 
 Push to GitHub:
+
 ```bash
 config push
 ```
 
 View all tracked files:
+
 ```bash
 config ls-tree -r main --name-only
 ```
 
 See changes in tracked files:
+
 ```bash
 config diff
 ```
 
 Pull latest changes:
+
 ```bash
 config pull
 ```
@@ -214,7 +224,7 @@ config pull
 - **OS**: Arch Linux
 - **Shell**: bash
 - **Window Manager**: Hyprland
-- **Node Version Manager**: nvm installed at `~/.config/nvm/`
+- **Node Version Manager**: nvm installed at `~/.nvm/`
 - **PATH additions**: `~/.local/bin` is prepended to PATH
 
 ## Package Management
