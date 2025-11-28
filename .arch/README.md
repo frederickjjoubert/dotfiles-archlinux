@@ -1,11 +1,12 @@
-# Arch Linux Package Management
+# Arch Linux System Configuration
 
-This directory tracks explicitly installed packages for easy system restoration.
+This directory tracks system configuration and packages for easy system restoration.
 
 ## Files
 
 - **pkglist.txt** - Official repository packages (pacman)
 - **aurlist.txt** - AUR packages (installed via AUR helpers like paru)
+- **archinstall/user_configuration.json** - Archinstall configuration with swap partition for hibernation
 
 ## Setup Flow (New System)
 
@@ -115,9 +116,52 @@ config commit -m "Update package lists"
 config push
 ```
 
+## System Configuration
+
+### Partition Layout
+- `/boot` (EFI): 1GB
+- `/` (root): 50GB (LUKS encrypted)
+- `swap`: 32GB (LUKS encrypted, supports hibernation)
+- `/home`: ~848GB (LUKS encrypted)
+
+### Swap Configuration
+- **Disk Swap**: 32GB LUKS-encrypted partition (for hibernation)
+- **Zram**: 4GB compressed RAM swap (active, for performance)
+- System uses both: zram for speed, disk swap for hibernation
+
+### Enabling Hibernation
+
+After installation, configure hibernation support:
+
+1. Find your swap partition UUID:
+```bash
+lsblk -f | grep swap
+```
+
+2. Add resume parameter to bootloader (edit `/boot/loader/entries/*.conf`):
+```
+options ... resume=/dev/mapper/swap ...
+```
+
+3. Add resume hook to `/etc/mkinitcpio.conf` (before `filesystems`):
+```
+HOOKS=(base udev autodetect modconf kms keyboard keymap consolefont block encrypt lvm2 resume filesystems fsck)
+```
+
+4. Regenerate initramfs:
+```bash
+sudo mkinitcpio -P
+```
+
+5. Test hibernation:
+```bash
+systemctl hibernate
+```
+
 ## Notes
 
 - Only explicitly installed packages are tracked (not dependencies)
 - Dependencies are automatically installed when needed
 - This follows the Arch Wiki recommended approach for package list management
 - The pkglist.txt is curated for Hyprland
+- All data partitions (root, swap, home) use LUKS encryption
