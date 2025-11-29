@@ -52,7 +52,11 @@ FILES=()
 #
 ##   NOTE: If you have /usr on a separate partition, you MUST include the
 #    usr and fsck hooks.
-HOOKS=(base udev autodetect microcode modconf kms keyboard keymap consolefont encrypt lvm2 block filesystems resume fsck)
+#
+# IMPORTANT: For LVM on LUKS with hibernation:
+# - 'block' must come BEFORE 'encrypt' and 'lvm2'
+# - 'resume' must come AFTER 'filesystems' but BEFORE 'fsck'
+HOOKS=(base udev autodetect microcode modconf kms keyboard keymap consolefont block encrypt lvm2 filesystems resume fsck)
 
 # COMPRESSION
 # Use this to compress the initramfs image. By default, zstd compression
