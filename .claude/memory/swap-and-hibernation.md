@@ -4,14 +4,17 @@
 - **RAM**: 31 GB (32 GiB)
 - **Disk**: NVMe 931.5GB
   - `/dev/nvme0n1p1`: 1GB `/boot` (vfat, unencrypted)
-  - `/dev/nvme0n1p2`: 50GB `/` (ext4, LUKS encrypted)
-  - `/dev/nvme0n1p3`: 880.5GB `/home` (ext4, LUKS encrypted)
+  - `/dev/nvme0n1p2`: ~930GB LUKS encrypted container
+    - LVM Physical Volume (cryptlvm)
+      - `vg0-root`: 50GB `/` (ext4)
+      - `vg0-swap`: 32GB swap
+      - `vg0-home`: 847GB `/home` (ext4)
 
-## Current Configuration (As Installed - November 2025)
-- **Storage Layout**: Direct LUKS on partitions (NO LVM)
-- **Swap Type**: zram only (4GB compressed RAM swap)
-- **Hibernation**: DISABLED - zram cannot persist to disk
-- **Status**: Hibernation removed from wlogout (not supported with current setup)
+## Current Configuration (Fresh Install - November 28, 2025)
+- **Storage Layout**: LVM on LUKS (RECOMMENDED)
+- **Swap Type**: Hybrid (zram 4GB + LVM swap 32GB)
+- **Hibernation**: ENABLED with LVM swap partition
+- **Status**: Fully configured with hibernation in wlogout
 
 ## Best Practice: Hybrid Swap Strategy
 
@@ -248,14 +251,64 @@ Hibernation works with base packages, but useful tools:
 - LUKS password entered at boot unlocks all encrypted partitions
 - Resume happens automatically after unlock
 
+## Current Implementation (November 28, 2025)
+
+### Configuration Files Created
+All system configuration files are now tracked in dotfiles repository at `.arch/etc/`:
+
+- **`.arch/etc/fstab`**
+  - Root: UUID=07ba7005-3481-4724-b05a-c51e078a919b (ext4)
+  - Home: UUID=22362773-656d-4c7e-acba-6a9e20fab55a (ext4)
+  - Boot: UUID=63B5-8A99 (vfat)
+  - Swap: UUID=8d8dd9d4-b00a-4c8b-8dae-a92e23be8b65 (priority 50)
+
+- **`.arch/etc/mkinitcpio.conf`**
+  - HOOKS: `base udev autodetect microcode modconf kms keyboard keymap consolefont encrypt lvm2 block filesystems resume fsck`
+  - Resume hook positioned correctly after filesystems
+
+- **`.arch/boot/loader/entries/*.conf`** (4 files)
+  - Boot options: `cryptdevice=UUID=42d3cbd9-4b59-40e6-a2e4-58476df54b25:cryptlvm root=/dev/vg0/root resume=/dev/mapper/vg0-swap zswap.enabled=0 rw rootfstype=ext4`
+  - Files: linux, linux-fallback, linux-lts, linux-lts-fallback
+
+- **`.arch/etc/README.md`**
+  - Complete installation and troubleshooting documentation
+
+### Installation Process
+Documented in `.arch/etc/README.md` and automated in `scripts/post-install-setup.sh`:
+
+```bash
+# Manual installation:
+sudo cp ~/.arch/etc/fstab /etc/fstab
+sudo cp ~/.arch/boot/loader/entries/*.conf /boot/loader/entries/
+sudo cp ~/.arch/etc/mkinitcpio.conf /etc/mkinitcpio.conf
+sudo mkinitcpio -P
+sudo swapon --priority 50 /dev/mapper/vg0-swap
+```
+
+### wlogout Integration
+Hibernation option added to `~/.config/wlogout/layout`:
+- Keybind: `h`
+- Action: `systemctl hibernate`
+- Accessible from waybar power menu
+
+### Status: READY TO APPLY
+- ✓ All configuration files created and tracked in dotfiles
+- ✓ Post-install script updated with automatic setup
+- ✓ wlogout configured with hibernation option
+- ⏳ Pending: Apply configs to system and reboot
+- ⏳ Pending: Test hibernation functionality
+
 ## Related Files
 - Archinstall config: `~/.arch/archinstall/user_configuration.json`
+- System configs: `~/.arch/etc/` (fstab, mkinitcpio.conf, bootloader entries)
 - wlogout config: `~/.config/wlogout/layout`
-- Bootloader: `/boot/loader/entries/arch.conf`
-- Initramfs: `/etc/mkinitcpio.conf`
-- Fstab: `/etc/fstab`
+- Post-install script: `~/scripts/post-install-setup.sh`
+- Active bootloader: `/boot/loader/entries/`
+- Active initramfs: `/etc/mkinitcpio.conf`
+- Active fstab: `/etc/fstab`
 
 ## References
 - Arch Wiki: Power management/Suspend and hibernate
 - Arch Wiki: Swap (for swap file creation)
 - Arch Wiki: Dm-crypt/Swap encryption
+- Arch Wiki: LVM

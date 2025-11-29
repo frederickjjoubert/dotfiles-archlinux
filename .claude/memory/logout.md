@@ -47,7 +47,14 @@ Located in `/usr/share/wayland-sessions/`:
 
 ### wlogout
 - Layout: `~/.config/wlogout/layout`
-- Logout action updated to: `hyprctl dispatch exit`
+- Logout action: `hyprctl dispatch exit`
+- Power management options:
+  - Lock (l): `loginctl lock-session`
+  - Logout (e): `hyprctl dispatch exit`
+  - Shutdown (s): `systemctl poweroff`
+  - Sleep/Suspend (u): `systemctl suspend`
+  - Hibernate (h): `systemctl hibernate` (requires LVM swap - see swap-and-hibernation.md)
+  - Reboot (r): `systemctl reboot`
 
 ## Alternative Solutions (Not Pursued)
 
