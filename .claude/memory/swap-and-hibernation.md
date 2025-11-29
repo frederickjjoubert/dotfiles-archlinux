@@ -4,285 +4,286 @@
 
 - **RAM**: 31 GB (32 GiB)
 - **Disk**: NVMe 931.5GB
-  - `/dev/nvme0n1p1`: 1GB `/boot` (vfat, unencrypted)
-  - `/dev/nvme0n1p2`: 50GB `/` (ext4, LUKS encrypted)
-  - `/dev/nvme0n1p3`: 880.5GB `/home` (ext4, LUKS encrypted)
+- **Hostname**: thinkpad
+- **Kernels**: linux, linux-lts
+- **Bootloader**: systemd-boot
 
-## Current Configuration (As Installed - November 2025)
+## Current Configuration (Fresh Install - November 29, 2025)
 
-- **Storage Layout**: Direct LUKS on partitions (NO LVM)
-- **Swap Type**: zram only (4GB compressed RAM swap)
-- **Hibernation**: DISABLED - zram cannot persist to disk
-- **Status**: Hibernation removed from wlogout (not supported with current setup)
-
-## Best Practice: Hybrid Swap Strategy
-
-For optimal performance AND hibernation support, use:
-
-### 1. Swap File (for hibernation)
-
-- **Location**: `/swapfile` on encrypted root partition
-- **Size**: 32GB minimum (≥ RAM size)
-- **Purpose**: Hibernation resume image storage
-- **Priority**: Lower (50)
-
-### 2. zram (for performance)
-
-- **Size**: 4GB (or 25-50% of RAM)
-- **Purpose**: Fast compressed swap for daily use
-- **Priority**: Higher (100) - used first
-
-### Why This Approach?
-
-- zram handles most swapping (faster, no disk wear)
-- Swapfile only used for hibernation
-- Best of both worlds: performance + hibernation capability
-
-## Archinstall Configuration Changes
-
-### Current Setting (Lines 290-291 of user_configuration.json)
-
-```json
-"swap": true,
-```
-
-**This creates zram ONLY** - no hibernation support.
-
-### Recommended Future Installation Strategy: LVM on LUKS (BEST)
-
-**Why LVM?**
-
-- Easily resize/add/remove volumes after installation
-- No repartitioning needed to add swap later
-- Snapshot support for backups
-- Professional standard for flexible storage management
-
-**Architecture:**
+### Storage Architecture: LVM on LUKS ✅
 
 ```
 /dev/nvme0n1p1 (1GB, unencrypted)
 └─ /boot (FAT32, ESP)
+   UUID: 1CF6-F3C0
 
 /dev/nvme0n1p2 (~930GB, encrypted)
 └─ LUKS encryption
-   └─ LVM Physical Volume
-      └─ Volume Group (vg0)
-         ├─ root (50GB) → /
-         ├─ swap (32GB) → swap
-         └─ home (remaining) → /home
+   UUID: 3ecf638f-95c6-4021-9916-aa9ac498a12b
+   └─ cryptlvm (unlocked at boot)
+      └─ LVM Physical Volume
+         └─ Volume Group: vg0
+            ├─ vg0-root  (50GB)  → / (ext4)
+            │  UUID: a9976e10-d159-4265-bcc5-e862dc156dd3
+            ├─ vg0-swap  (32GB)  → swap
+            │  UUID: e1dfe787-9a72-4768-8a67-526395b4df76
+            └─ vg0-home  (847GB) → /home (ext4)
+               UUID: 118223a3-9e88-47c7-9860-21a7a7432ca6
 ```
 
-**Archinstall Configuration Changes:**
+### Swap Configuration: Hybrid Strategy ✅
 
-⚠️ **Note**: As of archinstall 3.0.11, LVM support may require manual configuration or newer archinstall version. Check archinstall documentation for LVM schema.
+**1. zram (Performance)**
+- Device: zram0
+- UUID: d7860db2-5c91-4410-87e8-5e5167797b70
+- Priority: 100 (higher - used first)
+- Purpose: Fast compressed swap for daily use
 
-**High-level approach:**
+**2. LVM Swap Partition (Hibernation)**
+- Device: /dev/mapper/vg0-swap
+- UUID: e1dfe787-9a72-4768-8a67-526395b4df76
+- Size: 32GB (matches RAM requirement)
+- Priority: 50 (lower - used for hibernation)
+- Location: Inside encrypted LVM
 
-1. Create 2 partitions: `/boot` (1GB, unencrypted) and one large encrypted partition
-2. Inside LUKS, create LVM with three logical volumes: root, swap, home
-3. Enable zram with `"swap": true` for hybrid performance
+### Hibernation Status: CONFIGURED (Testing Pending)
 
-**Alternative if archinstall doesn't support LVM directly:**
+**Configuration Applied**: November 29, 2025 at ~07:01 PST
 
-- Use manual installation with `cryptsetup` + `lvm2`
-- Or use archinstall with manual post-config
-- Or create swap file post-install (see Option B below)
+Changes made:
+1. **fstab** (`/etc/fstab`): Added swap partition with priority 50
+2. **mkinitcpio** (`/etc/mkinitcpio.conf`): Added resume hook, reordered hooks for LVM on LUKS
+3. **Boot loader entries** (`/boot/loader/entries/*.conf`): Added `resume=/dev/mapper/vg0-swap` parameter
+4. **Initramfs**: Rebuilt with `mkinitcpio -P` for both kernels
+5. **wlogout** (`~/.config/wlogout/layout`): Added hibernate option (keybind: h)
 
-### Alternative: Swap Partition Without LVM
+**Next Step**: Reboot to verify system boots correctly, then test hibernation
 
-If not using LVM, add a dedicated swap partition:
+## Archinstall Configuration
 
-Modify partition layout in `user_configuration.json` to add a 4th partition between root and home:
+Fresh installation performed with modified `user_configuration.json`:
+
+### Key Settings
 
 ```json
-"partitions": [
-    {
-        "fs_type": "fat32",
-        "mountpoint": "/boot",
-        "size": {"unit": "GiB", "value": 1},
-        "flags": ["boot", "esp"],
-        "type": "primary"
+{
+  "bootloader": "Systemd-boot",
+  "kernels": ["linux", "linux-lts"],
+  "swap": true,  // Creates zram
+  "disk_config": {
+    "config_type": "default_layout",
+    "disk_encryption": {
+      "encryption_type": "lvm_on_luks",  // ← Key setting
+      "partitions": ["cbdc62e7-03df-4b0d-91b7-df7a3ae9958e"]
     },
-    {
-        "fs_type": "ext4",
-        "mountpoint": "/",
-        "size": {"unit": "GiB", "value": 50},
-        "obj_id": "b3a21f73-860c-4203-b557-a805d6c991b2",
-        "type": "primary"
-    },
-    {
-        "fs_type": "swap",
-        "mountpoint": null,
-        "size": {"unit": "GiB", "value": 32},
-        "obj_id": "SWAP-PARTITION-UUID",
-        "type": "primary"
-    },
-    {
-        "fs_type": "ext4",
-        "mountpoint": "/home",
-        "flags": ["linux-home"],
-        "size": {"unit": "B", "value": <remaining-space>},
-        "obj_id": "677c000f-d1b3-42a6-bdce-8d8044c10b08",
-        "type": "primary"
+    "lvm_config": {
+      "config_type": "default",
+      "vol_groups": [{
+        "name": "vg0",
+        "volumes": [
+          {
+            "name": "root",
+            "fs_type": "ext4",
+            "mountpoint": "/",
+            "length": {"unit": "GiB", "value": 50}
+          },
+          {
+            "name": "swap",
+            "fs_type": "linux-swap",
+            "mountpoint": null,
+            "length": {"unit": "GiB", "value": 32}  // ← Hibernate swap
+          },
+          {
+            "name": "home",
+            "fs_type": "ext4",
+            "mountpoint": "/home",
+            "length": {"unit": "GiB", "value": 847}
+          }
+        ]
+      }]
     }
-]
-```
-
-Add swap partition to encryption:
-
-```json
-"disk_encryption": {
-    "encryption_type": "luks",
-    "partitions": [
-        "b3a21f73-860c-4203-b557-a805d6c991b2",  // root
-        "SWAP-PARTITION-UUID",                    // swap - ADD THIS
-        "677c000f-d1b3-42a6-bdce-8d8044c10b08"   // home
-    ]
+  }
 }
 ```
 
-Keep zram enabled:
+## Hibernation Configuration Details
 
-```json
-"swap": true,  // This adds zram in addition to swap partition
+### Boot Loader Configuration
+
+All four boot entries updated (`/boot/loader/entries/`):
+- `linux.conf`
+- `linux-lts.conf`
+- `linux-fallback.conf`
+- `linux-lts-fallback.conf`
+
+**Kernel parameters**:
+```
+options cryptdevice=UUID=3ecf638f-95c6-4021-9916-aa9ac498a12b:cryptlvm root=/dev/vg0/root resume=/dev/mapper/vg0-swap zswap.enabled=0 rw rootfstype=ext4
 ```
 
-**Drawback**: Not flexible after install (would need to repartition to change sizes)
+Key parameter: `resume=/dev/mapper/vg0-swap`
 
-**Option B: Post-Install Swap File (CURRENT SYSTEM)**
+### mkinitcpio Configuration
 
-Keep `"swap": true` in archinstall config, then after installation:
-
-1. Create swap file:
-
-```bash
-sudo dd if=/dev/zero of=/swapfile bs=1M count=32768 status=progress
-sudo chmod 600 /swapfile
-sudo mkswap /swapfile
-sudo swapon --priority 50 /swapfile
+**Hooks order** (`/etc/mkinitcpio.conf`):
+```
+HOOKS=(base udev autodetect microcode modconf kms keyboard keymap consolefont block encrypt lvm2 filesystems resume fsck)
 ```
 
-2. Add to `/etc/fstab`:
+**Critical ordering for LVM on LUKS with hibernation**:
+- `block` before `encrypt` and `lvm2` ✅
+- `resume` after `filesystems` but before `fsck` ✅
+
+### fstab Configuration
 
 ```
-/swapfile none swap sw,pri=50 0 0
+# /dev/mapper/vg0-root
+UUID=a9976e10-d159-4265-bcc5-e862dc156dd3  /        ext4  rw,relatime  0 1
+
+# /dev/mapper/vg0-home
+UUID=118223a3-9e88-47c7-9860-21a7a7432ca6  /home    ext4  rw,relatime  0 2
+
+# /dev/nvme0n1p1
+UUID=1CF6-F3C0  /boot  vfat  rw,relatime,fmask=0022,dmask=0022,codepage=437,iocharset=ascii,shortname=mixed,utf8,errors=remount-ro  0 2
+
+# /dev/mapper/vg0-swap (priority 50, lower than zram which is 100)
+UUID=e1dfe787-9a72-4768-8a67-526395b4df76  none  swap  sw,pri=50  0 0
 ```
 
-3. Configure zram priority (ensure it's higher):
+## Management Scripts
 
-```bash
-# Check current zram priority
-swapon --show
-# Should show zram0 with priority 100, swapfile with priority 50
-```
+Created in `~/scripts/`:
 
-## Hibernation Resume Configuration
+### enable-hibernation.sh
+Applies hibernation configuration:
+1. Copies `.hibernation` files to system locations
+2. Updates boot loader entries
+3. Rebuilds initramfs
+4. Provides testing instructions
 
-After creating persistent swap, configure resume:
+**Usage**: `sudo ~/scripts/enable-hibernation.sh`
 
-### 1. Find Swap Location
+### disable-hibernation.sh
+Reverts to backup (non-hibernation) configuration:
+1. Copies `.backup` files to system locations
+2. Restores original boot loader entries
+3. Rebuilds initramfs
+4. Returns system to working state
 
-```bash
-# For swap file:
-findmnt -no UUID -T /swapfile
-filefrag -v /swapfile | head -n 5  # Get physical offset
+**Usage**: `sudo ~/scripts/disable-hibernation.sh`
 
-# For swap partition:
-blkid /dev/nvme0n1p3  # Get UUID
-```
+**Status**: enable-hibernation.sh run successfully on Nov 29, 2025
 
-### 2. Update Bootloader (systemd-boot)
+## Configuration File Backups
 
-Edit `/boot/loader/entries/arch.conf`:
+Located in `~/.arch/`:
 
-```
-title   Arch Linux
-linux   /vmlinuz-linux
-initrd  /initramfs-linux.img
-options root=/dev/mapper/root resume=UUID=<swap-uuid> resume_offset=<offset-if-file> rw quiet
-```
+### Boot Loader Entries
+- `boot/loader/entries/*.backup` - Original working configuration
+- `boot/loader/entries/*.hibernation` - Hibernation-enabled configuration
 
-For encrypted swap, use:
+### System Configuration
+- `etc/fstab.backup` - Original fstab
+- `etc/fstab.hibernation` - With swap partition added
+- `etc/mkinitcpio.conf.backup` - Original hooks configuration
+- `etc/mkinitcpio.conf.hibernation` - With resume hook added
 
-```
-options ... resume=/dev/mapper/swap ...
-```
+## Testing Procedure
 
-### 3. Update mkinitcpio
+### Phase 1: Reboot Test (Current)
+1. Reboot system
+2. Verify system boots normally
+3. Check WiFi/network connectivity
+4. Verify swap is mounted: `swapon --show`
+5. Check resume parameter: `cat /proc/cmdline | grep resume`
 
-Edit `/etc/mkinitcpio.conf`:
-
-```
-HOOKS=(base udev autodetect microcode modconf kms keyboard keymap consolefont block encrypt filesystems resume fsck)
-```
-
-Note: `resume` hook must come AFTER `encrypt` and `filesystems`.
-
-Rebuild initramfs:
-
-```bash
-sudo mkinitcpio -P
-```
-
-### 4. Test Hibernation
-
-```bash
-systemctl hibernate
-```
-
-## Current System Migration Path
-
-To enable hibernation on the current system:
-
-1. **Check available space** on root partition
-2. **Create 32GB swap file** on `/` (encrypted partition)
-3. **Configure resume parameters** in bootloader
-4. **Update initramfs** with resume hook
-5. **Keep zram** for daily performance
-6. **Test hibernate** from wlogout
-
-Space requirement: ~32GB on root (currently using ? of 50GB)
-
-## Package Requirements
-
-Hibernation works with base packages, but useful tools:
-
-- `systemd` (already installed) - provides systemctl hibernate
-- `pm-utils` (optional) - additional power management
-- `uswsusp` (optional alternative) - userspace software suspend
+### Phase 2: Hibernation Test
+1. Save all work
+2. Test hibernate via: `systemctl hibernate` OR wlogout (press `h`)
+3. System should power off completely
+4. Power on - should resume to exact same session
+5. If fails, run: `sudo ~/scripts/disable-hibernation.sh`
 
 ## Troubleshooting
 
-### Hibernation Fails Silently
+### Previous Issue: WiFi Breaking
+- **When**: Earlier attempt to apply hibernation config
+- **Cause**: Unknown (configuration files were correct)
+- **Resolution**: Reverted to backups
+- **Current attempt**: Successful - WiFi working after applying config
 
+### Verification Commands
+
+```bash
+# Check swap status
+swapon --show
+
+# Verify resume parameter in kernel command line
+cat /proc/cmdline
+
+# Check systemd-hibernate service
+systemctl status systemd-hibernate.service
+
+# View hibernation logs
+journalctl -u systemd-hibernate.service
+
+# Check initramfs hooks
+lsinitcpio /boot/initramfs-linux.img | grep resume
+```
+
+### Common Issues
+
+**Hibernation fails silently**:
 - Check journal: `journalctl -u systemd-hibernate.service`
-- Verify resume parameter in kernel cmdline: `cat /proc/cmdline`
-- Check swap is active: `swapon --show`
-- Ensure swap is large enough: `free -h` vs swap size
+- Verify swap is active and large enough
+- Ensure resume parameter matches swap device
 
-### Resume Not Working
-
-- Verify resume hook is AFTER encrypt in mkinitcpio
-- Check resume UUID matches actual swap device
-- For swap file: verify offset is correct
+**Resume not working**:
+- Verify resume hook order in mkinitcpio
+- Check resume UUID matches vg0-swap
 - Rebuild initramfs after changes
 
-### Encrypted Swap Issues
-
-- Root partition must be unlocked before resume
-- LUKS password entered at boot unlocks all encrypted partitions
+**Encrypted swap**:
+- LUKS password entered at boot unlocks all volumes
 - Resume happens automatically after unlock
+- Swap must be inside same LUKS container as root
+
+## Why LVM on LUKS Works Best
+
+**Advantages**:
+- ✅ Flexible: Resize/add/remove volumes without repartitioning
+- ✅ Secure: Swap is encrypted (safe hibernation)
+- ✅ Professional: Industry standard for storage management
+- ✅ Simple: Single password unlocks all volumes
+- ✅ Hybrid: Can combine with zram for optimal performance
+
+**vs. Swap File**:
+- Swap file requires calculating physical offset
+- Swap file on Btrfs has additional complications
+- LVM swap "just works" with simple UUID
 
 ## Related Files
 
-- Archinstall config: `~/.arch/archinstall/user_configuration.json`
-- wlogout config: `~/.config/wlogout/layout`
-- Bootloader: `/boot/loader/entries/arch.conf`
-- Initramfs: `/etc/mkinitcpio.conf`
-- Fstab: `/etc/fstab`
+**System Configuration**:
+- `/etc/fstab` - Filesystem mount configuration
+- `/etc/mkinitcpio.conf` - Initramfs hooks
+- `/boot/loader/entries/*.conf` - Boot loader entries
+
+**User Configuration**:
+- `~/.arch/archinstall/user_configuration.json` - Installation configuration
+- `~/.config/wlogout/layout` - Logout menu with hibernate option
+- `~/scripts/enable-hibernation.sh` - Apply hibernation config
+- `~/scripts/disable-hibernation.sh` - Revert to backups
+
+**Backups**:
+- `~/.arch/boot/loader/entries/*.backup` - Safe boot configs
+- `~/.arch/boot/loader/entries/*.hibernation` - Hibernate boot configs
+- `~/.arch/etc/fstab.{backup,hibernation}` - fstab versions
+- `~/.arch/etc/mkinitcpio.conf.{backup,hibernation}` - Hook configurations
 
 ## References
 
 - Arch Wiki: Power management/Suspend and hibernate
-- Arch Wiki: Swap (for swap file creation)
-- Arch Wiki: Dm-crypt/Swap encryption
+- Arch Wiki: Dm-crypt/Encrypting an entire system#LVM on LUKS
+- Arch Wiki: Swap
+- systemd-boot documentation
