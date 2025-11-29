@@ -1,6 +1,7 @@
 # Swap and Hibernation Configuration
 
 ## System Specifications
+
 - **RAM**: 31 GB (32 GiB)
 - **Disk**: NVMe 931.5GB
   - `/dev/nvme0n1p1`: 1GB `/boot` (vfat, unencrypted)
@@ -8,6 +9,7 @@
   - `/dev/nvme0n1p3`: 880.5GB `/home` (ext4, LUKS encrypted)
 
 ## Current Configuration (As Installed - November 2025)
+
 - **Storage Layout**: Direct LUKS on partitions (NO LVM)
 - **Swap Type**: zram only (4GB compressed RAM swap)
 - **Hibernation**: DISABLED - zram cannot persist to disk
@@ -18,17 +20,20 @@
 For optimal performance AND hibernation support, use:
 
 ### 1. Swap File (for hibernation)
+
 - **Location**: `/swapfile` on encrypted root partition
 - **Size**: 32GB minimum (≥ RAM size)
 - **Purpose**: Hibernation resume image storage
 - **Priority**: Lower (50)
 
 ### 2. zram (for performance)
+
 - **Size**: 4GB (or 25-50% of RAM)
 - **Purpose**: Fast compressed swap for daily use
 - **Priority**: Higher (100) - used first
 
 ### Why This Approach?
+
 - zram handles most swapping (faster, no disk wear)
 - Swapfile only used for hibernation
 - Best of both worlds: performance + hibernation capability
@@ -36,6 +41,7 @@ For optimal performance AND hibernation support, use:
 ## Archinstall Configuration Changes
 
 ### Current Setting (Lines 290-291 of user_configuration.json)
+
 ```json
 "swap": true,
 ```
@@ -45,12 +51,14 @@ For optimal performance AND hibernation support, use:
 ### Recommended Future Installation Strategy: LVM on LUKS (BEST)
 
 **Why LVM?**
+
 - Easily resize/add/remove volumes after installation
 - No repartitioning needed to add swap later
 - Snapshot support for backups
 - Professional standard for flexible storage management
 
 **Architecture:**
+
 ```
 /dev/nvme0n1p1 (1GB, unencrypted)
 └─ /boot (FAT32, ESP)
@@ -69,11 +77,13 @@ For optimal performance AND hibernation support, use:
 ⚠️ **Note**: As of archinstall 3.0.11, LVM support may require manual configuration or newer archinstall version. Check archinstall documentation for LVM schema.
 
 **High-level approach:**
+
 1. Create 2 partitions: `/boot` (1GB, unencrypted) and one large encrypted partition
 2. Inside LUKS, create LVM with three logical volumes: root, swap, home
 3. Enable zram with `"swap": true` for hybrid performance
 
 **Alternative if archinstall doesn't support LVM directly:**
+
 - Use manual installation with `cryptsetup` + `lvm2`
 - Or use archinstall with manual post-config
 - Or create swap file post-install (see Option B below)
@@ -119,6 +129,7 @@ Modify partition layout in `user_configuration.json` to add a 4th partition betw
 ```
 
 Add swap partition to encryption:
+
 ```json
 "disk_encryption": {
     "encryption_type": "luks",
@@ -131,6 +142,7 @@ Add swap partition to encryption:
 ```
 
 Keep zram enabled:
+
 ```json
 "swap": true,  // This adds zram in addition to swap partition
 ```
@@ -142,6 +154,7 @@ Keep zram enabled:
 Keep `"swap": true` in archinstall config, then after installation:
 
 1. Create swap file:
+
 ```bash
 sudo dd if=/dev/zero of=/swapfile bs=1M count=32768 status=progress
 sudo chmod 600 /swapfile
@@ -150,11 +163,13 @@ sudo swapon --priority 50 /swapfile
 ```
 
 2. Add to `/etc/fstab`:
+
 ```
 /swapfile none swap sw,pri=50 0 0
 ```
 
 3. Configure zram priority (ensure it's higher):
+
 ```bash
 # Check current zram priority
 swapon --show
@@ -166,6 +181,7 @@ swapon --show
 After creating persistent swap, configure resume:
 
 ### 1. Find Swap Location
+
 ```bash
 # For swap file:
 findmnt -no UUID -T /swapfile
@@ -178,6 +194,7 @@ blkid /dev/nvme0n1p3  # Get UUID
 ### 2. Update Bootloader (systemd-boot)
 
 Edit `/boot/loader/entries/arch.conf`:
+
 ```
 title   Arch Linux
 linux   /vmlinuz-linux
@@ -186,6 +203,7 @@ options root=/dev/mapper/root resume=UUID=<swap-uuid> resume_offset=<offset-if-f
 ```
 
 For encrypted swap, use:
+
 ```
 options ... resume=/dev/mapper/swap ...
 ```
@@ -193,6 +211,7 @@ options ... resume=/dev/mapper/swap ...
 ### 3. Update mkinitcpio
 
 Edit `/etc/mkinitcpio.conf`:
+
 ```
 HOOKS=(base udev autodetect microcode modconf kms keyboard keymap consolefont block encrypt filesystems resume fsck)
 ```
@@ -200,11 +219,13 @@ HOOKS=(base udev autodetect microcode modconf kms keyboard keymap consolefont bl
 Note: `resume` hook must come AFTER `encrypt` and `filesystems`.
 
 Rebuild initramfs:
+
 ```bash
 sudo mkinitcpio -P
 ```
 
 ### 4. Test Hibernation
+
 ```bash
 systemctl hibernate
 ```
@@ -225,6 +246,7 @@ Space requirement: ~32GB on root (currently using ? of 50GB)
 ## Package Requirements
 
 Hibernation works with base packages, but useful tools:
+
 - `systemd` (already installed) - provides systemctl hibernate
 - `pm-utils` (optional) - additional power management
 - `uswsusp` (optional alternative) - userspace software suspend
@@ -232,23 +254,27 @@ Hibernation works with base packages, but useful tools:
 ## Troubleshooting
 
 ### Hibernation Fails Silently
+
 - Check journal: `journalctl -u systemd-hibernate.service`
 - Verify resume parameter in kernel cmdline: `cat /proc/cmdline`
 - Check swap is active: `swapon --show`
 - Ensure swap is large enough: `free -h` vs swap size
 
 ### Resume Not Working
+
 - Verify resume hook is AFTER encrypt in mkinitcpio
 - Check resume UUID matches actual swap device
 - For swap file: verify offset is correct
 - Rebuild initramfs after changes
 
 ### Encrypted Swap Issues
+
 - Root partition must be unlocked before resume
 - LUKS password entered at boot unlocks all encrypted partitions
 - Resume happens automatically after unlock
 
 ## Related Files
+
 - Archinstall config: `~/.arch/archinstall/user_configuration.json`
 - wlogout config: `~/.config/wlogout/layout`
 - Bootloader: `/boot/loader/entries/arch.conf`
@@ -256,6 +282,7 @@ Hibernation works with base packages, but useful tools:
 - Fstab: `/etc/fstab`
 
 ## References
+
 - Arch Wiki: Power management/Suspend and hibernate
 - Arch Wiki: Swap (for swap file creation)
 - Arch Wiki: Dm-crypt/Swap encryption
