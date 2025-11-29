@@ -1,0 +1,16 @@
+# Static information about the filesystems.
+# See fstab(5) for details.
+
+# <file system> <dir> <type> <options> <dump> <pass>
+# /dev/sda2 LABEL=ARCHISO_EFI
+UUID=6905-D788      	/         	vfat      	rw,relatime,fmask=0022,dmask=0022,codepage=437,iocharset=ascii,shortname=mixed,utf8,errors=remount-ro	0 1
+
+# /dev/mapper/vg0-root
+UUID=a9976e10-d159-4265-bcc5-e862dc156dd3	/         	ext4      	rw,relatime	0 2
+
+# /dev/mapper/vg0-home
+UUID=118223a3-9e88-47c7-9860-21a7a7432ca6	/home     	ext4      	rw,relatime	0 2
+
+# /dev/nvme0n1p1
+UUID=1CF6-F3C0      	/boot     	vfat      	rw,relatime,fmask=0022,dmask=0022,codepage=437,iocharset=ascii,shortname=mixed,utf8,errors=remount-ro	0 2
+
