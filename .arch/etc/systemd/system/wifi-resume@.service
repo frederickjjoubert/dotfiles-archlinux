@@ -1,0 +1,13 @@
+[Unit]
+Description=Reload WiFi driver after hibernation
+After=hibernate.target hybrid-sleep.target suspend-then-hibernate.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/modprobe -r %i
+ExecStart=/usr/bin/modprobe %i
+ExecStart=/usr/bin/systemctl restart iwd NetworkManager
+
+[Install]
+WantedBy=hibernate.target hybrid-sleep.target suspend-then-hibernate.target
+
