@@ -31,6 +31,14 @@ This repository serves a dual purpose:
 
 ## Quick Start (Fresh System)
 
+### Enable SSH (Optional)
+
+```bash
+sudo systemctl enable --now sshd
+```
+
+### Automated Setup
+
 For a completely automated setup on a fresh Arch Linux installation:
 
 ```bash
