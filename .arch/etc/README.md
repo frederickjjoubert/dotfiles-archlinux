@@ -6,19 +6,9 @@ This directory contains system configuration files for reproducible Arch Linux s
 
 Configuration for the iwd wireless daemon to prevent aggressive roaming on mesh networks.
 
-### Files Included
+### Files
 
 - `iwd/main.conf` - iwd configuration with roaming optimizations
-
-### Installation
-
-```bash
-# Copy iwd configuration
-sudo cp ~/.arch/etc/iwd/main.conf /etc/iwd/main.conf
-
-# Restart iwd service
-sudo systemctl restart iwd
-```
 
 ### Configuration Details
 
@@ -27,82 +17,57 @@ sudo systemctl restart iwd
 - Disables automatic roaming scans to prevent constant AP switching
 - Increased roam retry interval (120 seconds)
 
+### Usage
+
+To apply the iwd configuration:
+
+```bash
+sudo cp ~/.arch/etc/iwd/main.conf /etc/iwd/main.conf
+sudo systemctl restart iwd
+```
+
 ## Hibernation Configuration
 
-These files enable hibernation with the LVM swap partition.
+This directory maintains two versions of critical system configuration files: backup (non-hibernation) and hibernation-enabled versions.
 
-### Files Included
+### Files
 
-- `fstab` - Filesystem table with swap partition (priority 50, lower than zram)
-- `mkinitcpio.conf` - Initramfs configuration with resume hook
-- `boot/loader/entries/*.conf` - Bootloader entries with resume parameter
+**Backup versions (original working configuration):**
+- `fstab.backup` - Filesystem table without swap partition
+- `mkinitcpio.conf.backup` - Initramfs configuration without resume hook
 
-### Installation
+**Hibernation versions (currently active and working):**
+- `fstab.hibernation` - Filesystem table with swap partition (priority 50, lower than zram)
+- `mkinitcpio.conf.hibernation` - Initramfs configuration with resume hook for hibernation
 
-Run these commands to apply the hibernation configuration:
+### Current Status
 
+Hibernation is **fully configured and working** on this system. The hibernation-enabled configuration includes:
+
+- **Hybrid swap strategy:** zram0 (4 GiB, priority 100) for performance, vg0-swap (32 GiB, priority 50) for hibernation
+- **Resume hook:** Properly ordered in mkinitcpio.conf after encrypt/filesystems hooks
+- **WiFi fix:** systemd sleep hook handles Realtek RTL8852CE driver hibernation issues
+
+See `.arch/boot/loader/entries/README.md` for bootloader configuration details.
+
+See `.arch/usr/lib/systemd/system-sleep/wifi-hibernate-fix` for the WiFi module reload hook.
+
+### Management Scripts
+
+Use these scripts to switch between configurations:
+
+**Enable hibernation (apply .hibernation files):**
 ```bash
-# 1. Copy fstab
-sudo cp ~/.arch/etc/fstab /etc/fstab
-
-# 2. Copy bootloader entries
-sudo cp ~/.arch/boot/loader/entries/*.conf /boot/loader/entries/
-
-# 3. Copy mkinitcpio.conf
-sudo cp ~/.arch/etc/mkinitcpio.conf /etc/mkinitcpio.conf
-
-# 4. Rebuild initramfs for all kernels
-sudo mkinitcpio -P
-
-# 5. Verify swap is active (if not already done)
-sudo swapon --priority 50 /dev/mapper/vg0-swap
-swapon --show  # Should show both zram0 (pri=100) and vg0-swap (pri=50)
+sudo ~/scripts/enable-hibernation.sh
 ```
 
-### Testing Hibernation
-
-After installation and reboot:
-
+**Disable hibernation (revert to .backup files):**
 ```bash
-# Test hibernation
-systemctl hibernate
+sudo ~/scripts/disable-hibernation.sh
 ```
 
-The system should:
-1. Save state to swap partition
-2. Power off
-3. Resume on next boot with all applications restored
-
-### Configuration Details
-
-**Swap Strategy (Hybrid):**
-- zram0: 4 GiB (priority 100) - Used first for performance
-- vg0-swap: 32 GiB (priority 50) - Used for hibernation
-
-**Resume Configuration:**
-- Bootloader: `resume=/dev/mapper/vg0-swap`
-- mkinitcpio: `resume` hook added after `filesystems`
-
-**Important:** The `resume` hook must come AFTER `encrypt` and `filesystems` hooks in mkinitcpio.conf.
-
-### Troubleshooting
-
-If hibernation fails:
-
-```bash
-# Check resume parameter is in kernel command line
-cat /proc/cmdline | grep resume
-
-# Check swap is active
-swapon --show
-
-# Check hibernation service logs
-journalctl -u systemd-hibernate.service
-
-# Verify resume hook in initramfs
-lsinitcpio /boot/initramfs-linux.img | grep resume
-```
+Both scripts handle copying configuration files, updating bootloader entries, managing the WiFi fix hook, and rebuilding the initramfs.
 
 ## Related Documentation
 
-See `.claude/memory/swap-and-hibernation.md` for detailed technical documentation.
+See `.claude/memory/swap-and-hibernation.md` for comprehensive technical documentation, testing history, and troubleshooting information.
