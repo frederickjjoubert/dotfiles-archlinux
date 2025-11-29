@@ -25,6 +25,7 @@ echo "The following changes will be made:"
 echo "  - Copy fstab.backup -> /etc/fstab"
 echo "  - Copy mkinitcpio.conf.backup -> /etc/mkinitcpio.conf"
 echo "  - Copy boot loader entries (*.backup -> /boot/loader/entries/)"
+echo "  - Remove WiFi hibernation fix from /usr/lib/systemd/system-sleep/"
 echo "  - Rebuild initramfs with mkinitcpio -P"
 echo
 read -p "Continue? (y/N) " -n 1 -r
@@ -54,7 +55,16 @@ cp -v /home/jacques/.arch/boot/loader/entries/linux-lts-fallback.conf.backup \
    /boot/loader/entries/linux-lts-fallback.conf
 
 echo
-echo -e "${GREEN}Step 4: Rebuilding initramfs...${NC}"
+echo -e "${GREEN}Step 4: Removing WiFi hibernation fix...${NC}"
+if [ -f /usr/lib/systemd/system-sleep/wifi-hibernate-fix ]; then
+   rm -v /usr/lib/systemd/system-sleep/wifi-hibernate-fix
+   echo "Removed WiFi module reload hook"
+else
+   echo "WiFi fix not found (already removed or never installed)"
+fi
+
+echo
+echo -e "${GREEN}Step 5: Rebuilding initramfs...${NC}"
 echo -e "${YELLOW}This may take a minute...${NC}"
 mkinitcpio -P
 

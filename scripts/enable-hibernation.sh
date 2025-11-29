@@ -25,6 +25,7 @@ echo "The following changes will be made:"
 echo "  - Copy fstab.hibernation -> /etc/fstab"
 echo "  - Copy mkinitcpio.conf.hibernation -> /etc/mkinitcpio.conf"
 echo "  - Copy boot loader entries (*.hibernation -> /boot/loader/entries/)"
+echo "  - Install WiFi hibernation fix -> /usr/lib/systemd/system-sleep/"
 echo "  - Rebuild initramfs with mkinitcpio -P"
 echo
 read -p "Continue? (y/N) " -n 1 -r
@@ -54,7 +55,13 @@ cp -v /home/jacques/.arch/boot/loader/entries/linux-lts-fallback.conf.hibernatio
    /boot/loader/entries/linux-lts-fallback.conf
 
 echo
-echo -e "${GREEN}Step 4: Rebuilding initramfs...${NC}"
+echo -e "${GREEN}Step 4: Installing WiFi hibernation fix...${NC}"
+install -m 755 /home/jacques/.arch/usr/lib/systemd/system-sleep/wifi-hibernate-fix \
+   /usr/lib/systemd/system-sleep/wifi-hibernate-fix
+echo "Installed WiFi module reload hook (fixes rtw89_8852ce resume timeout)"
+
+echo
+echo -e "${GREEN}Step 5: Rebuilding initramfs...${NC}"
 echo -e "${YELLOW}This may take a minute...${NC}"
 mkinitcpio -P
 

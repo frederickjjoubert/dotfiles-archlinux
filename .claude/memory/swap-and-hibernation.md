@@ -7,6 +7,7 @@
 - **Hostname**: thinkpad
 - **Kernels**: linux, linux-lts
 - **Bootloader**: systemd-boot
+- **WiFi**: Realtek RTL8852CE (802.11ax) using rtw89_8852ce driver
 
 ## Current Configuration (Fresh Install - November 29, 2025)
 
@@ -46,9 +47,11 @@
 - Priority: 50 (lower - used for hibernation)
 - Location: Inside encrypted LVM
 
-### Hibernation Status: CONFIGURED (Testing Pending)
+### Hibernation Status: ✅ FULLY TESTED AND WORKING
 
 **Configuration Applied**: November 29, 2025 at ~07:01 PST
+**WiFi Fix Added**: November 29, 2025 at ~07:30 PST
+**Testing Completed**: November 29, 2025
 
 Changes made:
 1. **fstab** (`/etc/fstab`): Added swap partition with priority 50
@@ -56,8 +59,20 @@ Changes made:
 3. **Boot loader entries** (`/boot/loader/entries/*.conf`): Added `resume=/dev/mapper/vg0-swap` parameter
 4. **Initramfs**: Rebuilt with `mkinitcpio -P` for both kernels
 5. **wlogout** (`~/.config/wlogout/layout`): Added hibernate option (keybind: h)
+6. **WiFi hibernation fix** (`/usr/lib/systemd/system-sleep/wifi-hibernate-fix`): Systemd sleep hook to reload WiFi modules
 
-**Next Step**: Reboot to verify system boots correctly, then test hibernation
+**Issue Found & Fixed**:
+- **Problem**: Hibernation worked but WiFi broke on resume (rtw89_8852ce driver timeout error -110)
+- **Root Cause**: Realtek RTL8852CE WiFi driver fails to resume from hibernation (ieee80211 phy0 wiphy_resume timeout)
+- **Solution**: systemd sleep hook that unloads WiFi modules before hibernation and reloads after resume
+
+**Testing Results**: ✅ ALL PASSED
+- ✅ Hibernation successful (system powers off completely)
+- ✅ Resume from hibernation successful (session restored)
+- ✅ WiFi working after hibernation resume
+- ✅ Reboot successful
+- ✅ Shutdown and restart successful
+- ✅ WiFi working after all operations
 
 ## Archinstall Configuration
 
@@ -158,8 +173,9 @@ Created in `~/scripts/`:
 Applies hibernation configuration:
 1. Copies `.hibernation` files to system locations
 2. Updates boot loader entries
-3. Rebuilds initramfs
-4. Provides testing instructions
+3. Installs WiFi hibernation fix hook
+4. Rebuilds initramfs
+5. Provides testing instructions
 
 **Usage**: `sudo ~/scripts/enable-hibernation.sh`
 
@@ -167,12 +183,11 @@ Applies hibernation configuration:
 Reverts to backup (non-hibernation) configuration:
 1. Copies `.backup` files to system locations
 2. Restores original boot loader entries
-3. Rebuilds initramfs
-4. Returns system to working state
+3. Removes WiFi hibernation fix hook
+4. Rebuilds initramfs
+5. Returns system to working state
 
 **Usage**: `sudo ~/scripts/disable-hibernation.sh`
-
-**Status**: enable-hibernation.sh run successfully on Nov 29, 2025
 
 ## Configuration File Backups
 
@@ -190,27 +205,50 @@ Located in `~/.arch/`:
 
 ## Testing Procedure
 
-### Phase 1: Reboot Test (Current)
-1. Reboot system
-2. Verify system boots normally
-3. Check WiFi/network connectivity
-4. Verify swap is mounted: `swapon --show`
-5. Check resume parameter: `cat /proc/cmdline | grep resume`
+### Phase 1: Reboot Test ✅ COMPLETED
+1. ✅ Reboot system
+2. ✅ Verify system boots normally
+3. ✅ Check WiFi/network connectivity
+4. ✅ Verify swap is mounted: `swapon --show`
+5. ✅ Check resume parameter: `cat /proc/cmdline | grep resume`
 
-### Phase 2: Hibernation Test
-1. Save all work
-2. Test hibernate via: `systemctl hibernate` OR wlogout (press `h`)
-3. System should power off completely
-4. Power on - should resume to exact same session
-5. If fails, run: `sudo ~/scripts/disable-hibernation.sh`
+### Phase 2: Hibernation Test ✅ COMPLETED
+1. ✅ Save all work
+2. ✅ Test hibernate via: `systemctl hibernate` OR wlogout (press `h`)
+3. ✅ System powered off completely
+4. ✅ Power on - resumed to exact same session
+5. ✅ WiFi working after resume (systemd sleep hook successful)
+
+### Additional Testing ✅ COMPLETED
+1. ✅ Multiple reboot cycles
+2. ✅ Shutdown and restart cycles
+3. ✅ WiFi stability verified across all power states
 
 ## Troubleshooting
 
-### Previous Issue: WiFi Breaking
-- **When**: Earlier attempt to apply hibernation config
-- **Cause**: Unknown (configuration files were correct)
-- **Resolution**: Reverted to backups
-- **Current attempt**: Successful - WiFi working after applying config
+### WiFi Breaking After Hibernation (RESOLVED)
+
+**Timeline**:
+1. Nov 29 ~07:01 PST: Applied hibernation config, rebooted - WiFi worked
+2. Nov 29 ~07:23 PST: Tested hibernation - system hibernated and resumed successfully
+3. **Problem**: WiFi not working after resume (wlan0 interface missing)
+4. Rebooted - WiFi still broken
+5. Ran disable script - WiFi restored
+
+**Root Cause Identified**:
+```
+Nov 29 07:23:36 kernel: ieee80211 phy0: PM: dpm_run_callback(): wiphy_resume [cfg80211] returns -110
+Nov 29 07:23:36 kernel: ieee80211 phy0: PM: failed to restore async: error -110
+```
+- Error -110 = ETIMEDOUT
+- Realtek RTL8852CE WiFi chip (rtw89_8852ce driver) fails to resume from hibernation
+- Driver doesn't properly handle the suspend/resume cycle for hibernation
+
+**Solution Implemented**:
+- Created systemd sleep hook: `~/.arch/usr/lib/systemd/system-sleep/wifi-hibernate-fix`
+- Hook unloads WiFi modules before hibernation: rtw89_8852ce, rtw89_pci, rtw89_core
+- Hook reloads modules after resume
+- Updated enable/disable scripts to install/remove the hook
 
 ### Verification Commands
 
@@ -268,6 +306,7 @@ lsinitcpio /boot/initramfs-linux.img | grep resume
 - `/etc/fstab` - Filesystem mount configuration
 - `/etc/mkinitcpio.conf` - Initramfs hooks
 - `/boot/loader/entries/*.conf` - Boot loader entries
+- `/usr/lib/systemd/system-sleep/wifi-hibernate-fix` - WiFi module reload hook (installed by enable script)
 
 **User Configuration**:
 - `~/.arch/archinstall/user_configuration.json` - Installation configuration
@@ -275,11 +314,12 @@ lsinitcpio /boot/initramfs-linux.img | grep resume
 - `~/scripts/enable-hibernation.sh` - Apply hibernation config
 - `~/scripts/disable-hibernation.sh` - Revert to backups
 
-**Backups**:
+**Backups & Config Files**:
 - `~/.arch/boot/loader/entries/*.backup` - Safe boot configs
 - `~/.arch/boot/loader/entries/*.hibernation` - Hibernate boot configs
 - `~/.arch/etc/fstab.{backup,hibernation}` - fstab versions
 - `~/.arch/etc/mkinitcpio.conf.{backup,hibernation}` - Hook configurations
+- `~/.arch/usr/lib/systemd/system-sleep/wifi-hibernate-fix` - WiFi module reload hook
 
 ## References
 
