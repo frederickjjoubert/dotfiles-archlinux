@@ -1,4 +1,5 @@
 amd-ucode
+aws-cli-v2
 base
 base-devel
 blueman
@@ -33,6 +34,7 @@ pipewire-alsa
 pipewire-jack
 pipewire-pulse
 polkit-kde-agent
+postgresql
 proton-vpn-gtk-app
 qt5-wayland
 qt6-wayland
@@ -43,6 +45,7 @@ slurp
 smartmontools
 sof-firmware
 ttf-jetbrains-mono-nerd
+unzip
 uwsm
 vim
 vulkan-radeon

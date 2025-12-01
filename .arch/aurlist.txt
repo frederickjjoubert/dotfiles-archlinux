@@ -1,4 +1,7 @@
 cursor-bin
+docker-desktop
 gitkraken
+jetbrains-toolbox
 paru
+paru-debug
 wlogout
