@@ -2,6 +2,7 @@ cursor-bin
 docker-desktop
 gitkraken
 jetbrains-toolbox
+kiro-ide
 paru
 paru-debug
 wlogout

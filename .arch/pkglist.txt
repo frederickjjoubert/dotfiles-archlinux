@@ -20,6 +20,7 @@ hyprlock
 hyprpaper
 iwd
 kitty
+less
 libpulse
 linux
 linux-firmware
