@@ -85,6 +85,17 @@ sudo cp ~/.config/iwd/main.conf /etc/iwd/main.conf
 sudo systemctl restart iwd
 ```
 
+#### Systemd Logind Configuration
+
+Copy logind configuration for power button behavior:
+
+```bash
+sudo cp -r ~/.arch/etc/systemd/logind.conf.d /etc/systemd/
+sudo systemctl restart systemd-logind
+```
+
+This configures the power button to suspend instead of power off.
+
 #### Electron Apps (Wayland Fixes)
 
 Electron apps like Cursor and Kiro need flags for proper Wayland rendering (fixes pixelated/grainy display).
