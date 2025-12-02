@@ -1,0 +1,15 @@
+#!/bin/bash
+set -euo pipefail
+
+flags_file="${XDG_CONFIG_HOME:-$HOME/.config}/kiro-flags.conf"
+
+flags=()
+if [[ -f "${flags_file}" ]]; then
+    while IFS= read -r line; do
+        if [[ ! "${line}" =~ ^[[:space:]]*# ]] && [[ -n "${line}" ]]; then
+            flags+=("${line}")
+        fi
+    done < "${flags_file}"
+fi
+
+exec /opt/Kiro/kiro "${flags[@]}" "$@"

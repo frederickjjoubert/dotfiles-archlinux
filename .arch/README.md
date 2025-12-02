@@ -85,6 +85,22 @@ sudo cp ~/.config/iwd/main.conf /etc/iwd/main.conf
 sudo systemctl restart iwd
 ```
 
+#### Electron Apps (Wayland Fixes)
+
+Electron apps like Cursor and Kiro need flags for proper Wayland rendering (fixes pixelated/grainy display).
+
+**Cursor** - Already handled by the AUR package wrapper via `~/.config/cursor-flags.conf`
+
+**Kiro** - Needs a wrapper script since the package doesn't support flags files:
+
+The wrapper script at `~/.local/bin/kiro` and desktop override at `~/.local/share/applications/kiro.desktop` are tracked in dotfiles and will be restored automatically.
+
+Both apps use `~/.config/{app}-flags.conf` with these flags:
+```
+--enable-features=UseOzonePlatform
+--ozone-platform=wayland
+```
+
 #### Hyprland Wallpaper
 
 After installing all packages, start hyprpaper for wallpaper:
