@@ -1,8 +1,10 @@
 cursor-bin
 docker-desktop
 gitkraken
+hyprvoice-bin
 jetbrains-toolbox
 kiro-ide
 paru
 paru-debug
+sublime-text-4
 wlogout
