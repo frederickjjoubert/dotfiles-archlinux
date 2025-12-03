@@ -48,6 +48,7 @@ sof-firmware
 spotify-launcher
 ttf-jetbrains-mono-nerd
 unzip
+uv
 uwsm
 vim
 vulkan-radeon

@@ -107,6 +107,7 @@ Electron apps like Cursor and Kiro need flags for proper Wayland rendering (fixe
 The wrapper script at `~/.local/bin/kiro` and desktop override at `~/.local/share/applications/kiro.desktop` are tracked in dotfiles and will be restored automatically.
 
 Both apps use `~/.config/{app}-flags.conf` with these flags:
+
 ```
 --enable-features=UseOzonePlatform
 --ozone-platform=wayland
@@ -146,12 +147,14 @@ config push
 ## System Configuration
 
 ### Partition Layout
+
 - `/boot` (EFI): 1GB
 - `/` (root): 50GB (LUKS encrypted)
 - `swap`: 32GB (LUKS encrypted, supports hibernation)
 - `/home`: ~848GB (LUKS encrypted)
 
 ### Swap Configuration
+
 - **Disk Swap**: 32GB LUKS-encrypted partition (for hibernation)
 - **Zram**: 4GB compressed RAM swap (active, for performance)
 - System uses both: zram for speed, disk swap for hibernation
@@ -161,26 +164,31 @@ config push
 After installation, configure hibernation support:
 
 1. Find your swap partition UUID:
+
 ```bash
 lsblk -f | grep swap
 ```
 
 2. Add resume parameter to bootloader (edit `/boot/loader/entries/*.conf`):
+
 ```
 options ... resume=/dev/mapper/swap ...
 ```
 
 3. Add resume hook to `/etc/mkinitcpio.conf` (before `filesystems`):
+
 ```
 HOOKS=(base udev autodetect modconf kms keyboard keymap consolefont block encrypt lvm2 resume filesystems fsck)
 ```
 
 4. Regenerate initramfs:
+
 ```bash
 sudo mkinitcpio -P
 ```
 
 5. Test hibernation:
+
 ```bash
 systemctl hibernate
 ```
