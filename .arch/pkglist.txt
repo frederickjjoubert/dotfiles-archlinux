@@ -45,6 +45,7 @@ sddm
 slurp
 smartmontools
 sof-firmware
+spotify-launcher
 ttf-jetbrains-mono-nerd
 unzip
 uwsm
