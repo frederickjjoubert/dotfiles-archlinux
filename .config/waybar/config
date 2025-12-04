@@ -104,7 +104,7 @@
     "cpu": {
         "format": "󰍛  {usage}%",
         "format-alt": "󰍛  {avg_frequency} GHz",
-        "interval": 2,
+        "interval": 1,
         "tooltip": true,
         "tooltip-format": "CPU Usage: {usage}%\nAvg Frequency: {avg_frequency} GHz"
     },
@@ -112,7 +112,7 @@
     "memory": {
         "format": "  {}%",
         "format-alt": "  {used:0.1f}G/{total:0.1f}G",
-        "interval": 2,
+        "interval": 1,
         "tooltip": true,
         "tooltip-format": "RAM: {used:0.1f}G / {total:0.1f}G ({percentage}%)\nSwap: {swapUsed:0.1f}G / {swapTotal:0.1f}G"
     },
@@ -121,7 +121,7 @@
         "exec": "cat /sys/class/drm/card*/device/gpu_busy_percent 2>/dev/null | head -n1 || echo '0'",
         "format": "󰢮  {}%",
         "return-type": "",
-        "interval": 2,
+        "interval": 1,
         "tooltip": true,
         "tooltip-format": "GPU Usage: {}%"
     }
